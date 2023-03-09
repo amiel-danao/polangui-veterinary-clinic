@@ -1,0 +1,338 @@
+from gc import collect
+from django.shortcuts import render, redirect
+from app.context_processors import CONTEXT
+from app.models import DeviceToken, Breed, CustomUser, Customer, Device, ImmunizationHistory, MedicalHistory, Pet
+from .serializers import BreedSerializer, CustomUserSerializer, CustomerImageSerializer, CustomerSerializer, DeviceSerializer, DeviceTokenSerializer, ImmunizationHistorySerializer, MedicalHistorySerializer, PetImageSerializer, PetSerializer
+from rest_framework import viewsets, mixins, generics
+from rest_framework.decorators import api_view, action
+from django.shortcuts import render
+from django.http.response import JsonResponse
+from rest_framework.parsers import JSONParser, MultiPartParser
+from rest_framework.exceptions import ParseError
+from django.shortcuts import get_object_or_404
+from rest_framework import status
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
+from django.http import HttpResponse
+from django.template import loader
+from rest_framework.response import Response
+from django.urls import resolve
+import threading
+import math
+import time
+import os
+from agora_token_builder import RtcTokenBuilder
+
+
+dirname = os.path.dirname(__file__)
+filename = "clinic-firebase-adminsdk-f45f4-e1db7a11eb.json"
+filepath = os.path.join(
+    dirname, f'../{filename}')
+
+if not firebase_admin._apps:
+    cred = credentials.Certificate(filepath)
+    firebase_admin.initialize_app(cred)
+
+database = firestore.client()
+
+query_watch = None
+
+
+@api_view(['GET', ])
+def get_breeds(request):
+    if request.method == 'GET':
+        breeds = Breed.objects.all()
+        species = request.query_params.get('species', None)
+        if species is not None:
+            breeds = breeds.filter(species=species)
+
+        breeds_serializer = BreedSerializer(breeds, many=True)
+        return JsonResponse(breeds_serializer.data, safe=False)
+
+
+@api_view(['POST', ])
+def pet_update(request):
+    if request.method == 'POST':
+        pet_data = JSONParser().parse(request)
+        pet_serializer = PetSerializer(data=pet_data)
+        if pet_serializer.is_valid():
+            pet_serializer.save()
+            return JsonResponse(pet_serializer.data, status=status.HTTP_201_CREATED)
+        return JsonResponse(pet_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def get_my_pets(owner):
+    pets = []
+    if owner is not None:
+        pets = Pet.objects.filter(owner=owner)
+    return pets
+
+
+@api_view(['GET', ])
+def pet_list(request):
+    if request.method == 'GET':
+        owner = request.query_params.get('owner', None)
+        pets = get_my_pets(owner=owner)
+
+        pets_serializer = PetSerializer(pets, many=True)
+        return JsonResponse(pets_serializer.data, safe=False)
+        # 'safe=False' for objects serialization
+
+
+@api_view(['GET', ])
+def customer_list(request):
+    if request.method == 'GET':
+        customers = Customer.objects.all()
+
+        customers_serializer = CustomerSerializer(customers, many=True)
+        return JsonResponse(customers_serializer.data, safe=False)
+
+
+class PetViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+    queryset = Pet.objects.all()
+    serializer_class = PetSerializer
+
+
+# class DeviceViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
+#     queryset = Device.objects.all()
+#     serializer_class = DeviceSerializer
+
+
+class DeviceList(generics.ListAPIView):
+    serializer_class = DeviceSerializer
+
+    def get_queryset(self):
+        owner_id = self.request.query_params.get('owner')
+        result = Device.objects.all()
+        if owner_id is not None:
+            result = Device.objects.filter(owner__id=owner_id)
+
+        pet_id = self.request.query_params.get('pet')
+        if pet_id is not None:
+            result = result.filter(pet__id=pet_id)
+
+        return result
+
+class DeviceTokenViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin):
+    queryset = DeviceToken.objects.all()
+    serializer_class = DeviceTokenSerializer
+
+
+class CustomerViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin):
+    queryset = Customer.objects.all()
+    serializer_class = CustomerSerializer
+
+
+class UploadPetImageViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.UpdateModelMixin):
+    queryset = Pet.objects.all()
+    serializer_class = PetImageSerializer
+    parser_classes = [MultiPartParser]
+
+
+class UploadCustomerImageViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.UpdateModelMixin):
+    queryset = Customer.objects.all()
+    serializer_class = CustomerImageSerializer
+    parser_classes = [MultiPartParser]
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def pet_detail(request, pk):
+    try:
+        pet = Pet.objects.get(pk=pk)
+    except Pet.DoesNotExist:
+        return JsonResponse({'message': 'The pet does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        pet_serializer = PetSerializer(pet)
+        return JsonResponse(pet_serializer.data)
+
+    elif request.method == 'PUT':
+        pet_data = JSONParser().parse(request)
+        pet_serializer = PetSerializer(pet, data=pet_data)
+        if pet_serializer.is_valid():
+            pet_serializer.save()
+            return JsonResponse(pet_serializer.data, status=status.HTTP_200_OK)
+        return JsonResponse(pet_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        pet.delete()
+        return JsonResponse({'message': 'Pet was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['GET', ])
+def get_medical_by_pet(request):
+    if request.method == 'GET':
+        medical_history = MedicalHistory.objects.all()
+        petId = request.query_params.get('pet', None)
+        if petId is not None:
+            medical_history = medical_history.filter(pet__id=petId)
+
+        medical_history_serializer = MedicalHistorySerializer(
+            medical_history, many=True)
+        return JsonResponse(medical_history_serializer.data, safe=False)
+
+
+@api_view(['GET', ])
+def get_immunization_by_pet(request):
+    if request.method == 'GET':
+        immunization_history = ImmunizationHistory.objects.all()
+        petId = request.query_params.get('pet', None)
+        if petId is not None:
+            immunization_history = immunization_history.filter(pet__id=petId)
+
+        immunization_history_serializer = ImmunizationHistorySerializer(
+            immunization_history, many=True)
+        return JsonResponse(immunization_history_serializer.data, safe=False)
+
+
+@api_view(['PUT', 'DELETE'])
+def medical_detail(request, pk):
+    try:
+        medical_history = MedicalHistory.objects.get(pk=pk)
+    except MedicalHistory.DoesNotExist:
+        return JsonResponse({'message': 'The medical_history does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'PUT':
+        medical_history_data = JSONParser().parse(request)
+        medical_history_serializer = MedicalHistorySerializer(
+            medical_history, data=medical_history_data)
+        if medical_history_serializer.is_valid():
+            medical_history_serializer.save()
+            return JsonResponse(medical_history_serializer.data, status=status.HTTP_200_OK)
+        return JsonResponse(medical_history_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        medical_history.delete()
+        return JsonResponse({'message': 'MedicalHistory was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+
+
+def chat_all(request):
+    if request.user is None or request.user.is_authenticated is False:
+        return redirect('admin:index')
+
+    template = loader.get_template('pages/chat.html')
+    all_custmomers = Customer.objects.all()
+    receiver = None
+    message_gc_id = None
+    try:
+        receiver = Customer.objects.first()
+        message_gc_id = f'{request.user.id}-{receiver.id}'
+    except Exception:
+        pass
+
+    pets = get_my_pets(receiver)
+
+    context = {
+        "pets": pets,
+        "receiver": receiver,
+        "contacts": all_custmomers,
+        "message_gc_id": message_gc_id
+    }
+
+    if request.method == 'POST':
+        send_message(request=request, receiver_id=receiver)
+
+    return HttpResponse(template.render(context, request))
+
+
+def chat(request, message_gc_id):
+    if request.user is None or request.user.is_authenticated is False:
+        return redirect('admin:index')
+
+    template = loader.get_template('pages/chat.html')
+    all_customers = Customer.objects.all()
+    receiver = None
+    receiver_id = ''
+
+    try:
+        receiver_id = message_gc_id.split('-')[1]
+        receiver = Customer.objects.filter(id=receiver_id).first()
+    except Exception:
+        pass
+
+    pets = get_my_pets(receiver)
+
+    context = {
+        "pets": pets,
+        "receiver": receiver,
+        "contacts": all_customers,
+        "message_gc_id": message_gc_id
+    }
+
+    if request.method == 'POST':
+        send_message(request=request, receiver_id=receiver_id)
+
+    return HttpResponse(template.render(context, request))
+
+
+def send_message(request, receiver_id):
+    input_message = None
+    if request is None or request.user is None or receiver_id is None:
+        return
+    message_gc_id = f'{request.user.id}-{receiver_id}'
+    try:
+        input_message = request.POST.get('input_message')
+
+        if input_message is not None:
+            current_milliseconds = str(math.trunc(time.time() * 1000))
+            new_message = {
+                u'content': input_message,
+                u'timestamp': current_milliseconds,
+                u'idFrom': request.user.id,
+                u'idTo': receiver_id,
+                u'type': 0
+            }
+
+            batch = database.batch()
+
+            message_thread_reference = database.collection(
+                u'messages').document(message_gc_id)
+            batch.set(message_thread_reference, {
+                u'timestamp': firestore.SERVER_TIMESTAMP}, merge=True)
+
+            message_reference = database.collection(u'messages').document(message_gc_id).collection(
+                message_gc_id).document(current_milliseconds)
+
+            batch.set(message_reference, new_message, merge=True)
+
+            batch.commit()
+    except Exception as exception:
+        print(exception)
+
+
+@api_view(['GET', ])
+def veterinary_list(request):
+    if request.method == 'GET':
+        veterinaries = CustomUser.objects.all()
+
+        veterinaries_serializer = CustomUserSerializer(veterinaries, many=True)
+        return JsonResponse(veterinaries_serializer.data, safe=False)
+
+
+def video_call(request, message_gc_id):
+    if request.user is None or request.user.is_authenticated is False:
+        return redirect('admin:index')
+
+    template = loader.get_template('pages/video_call.html')
+    
+    receiver_id = ''
+    receiver = "Other"
+    try:
+        receiver_id = message_gc_id.split('-')[1]
+        receiver = Customer.objects.filter(id=receiver_id).first()
+    except Exception:
+        pass
+    #Build token with account
+    expiration_time_in_seconds = 3600
+    currentTimestamp = time.time()
+    privilege_expired_ts = currentTimestamp + expiration_time_in_seconds;
+    token = RtcTokenBuilder.buildTokenWithAccount(CONTEXT['app_id'], CONTEXT['app_certificate'], message_gc_id, request.user.id, 1, privilege_expired_ts)
+
+    context = {
+        'message_gc_id': message_gc_id,
+        'receiver': receiver
+        # 'token': token
+    }
+
+    return HttpResponse(template.render(context, request))

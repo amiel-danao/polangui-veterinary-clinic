@@ -1,0 +1,66 @@
+{% load static %}
+<style>
+    .nav-link{
+        color:white;
+    }
+
+    .nav-link:hover{
+        color:lime;
+    }
+    .sidebar-icon{
+        max-width:50%;
+    }
+</style>
+
+<div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
+        <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+            <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <span class="fs-5 d-none d-sm-inline">
+                    <img src="{% static 'logo/logo.png' %}" class="mx-auto d-block sidebar-icon" alt="clinic logo">
+                </span>
+            </a>
+            <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+                <li class="nav-item">
+                    <a href="{% url 'admin:index' %}" class="nav-link align-middle px-0">
+                        <i class="fs-4 bi-house"></i> <span class="ms-1 d-none d-sm-inline">Home</span>
+                    </a>
+                </li>
+
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a href="{% url 'chat' %}" class="nav-link align-middle px-0">
+                        <i class="bi bi-person-circle"></i><span class="ms-1 d-none d-sm-inline">Chat</span>
+                    </a>
+                </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a href="#" class="nav-link align-middle px-0">
+                            <i class="bi bi-box-arrow-in-right"></i><span class="ms-1 d-none d-sm-inline">Sign in</span>
+                            
+                        </a>
+                    </li>
+                {% endif %}
+                
+                <li>
+                    <a href="#" class="nav-link px-0 align-middle">
+                        <i class="bi bi-question-circle-fill"></i> <span class="ms-1 d-none d-sm-inline">About</span> </a>
+                </li>
+            </ul>
+            <hr>
+            <ul class="navbar-nav ml-auto pb-3">
+
+                {% if user.is_authenticated %}
+                    <li class="nav-item active mr-3 text-white">
+                        Signed in as : <br>{{ user.email }}
+                    </li>
+                    <li class="nav-item mr-3 text-white">
+                        <i class="bi bi-box-arrow-left"></i>
+                        <span class="ms-1 d-none d-sm-inline">
+                            <a href="#" style="color:red">Log Out</a>
+                        </span>
+                    </li>
+                {% endif %}
+        
+              </ul>
+        </div>
+    </div>
