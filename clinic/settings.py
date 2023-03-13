@@ -61,6 +61,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'smart_selects',
     'rest_framework',
+    'crispy_forms',
+    'django_tables2',
+    'crispy_bootstrap5',
+    'django_bootstrap5',
 ]
 
 REST_FRAMEWORK = {
@@ -207,5 +211,8 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
+LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = 'login'  # this is the name of the url
 
+LOGOUT_REDIRECT_URL = '/'
 

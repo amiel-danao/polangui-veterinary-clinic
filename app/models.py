@@ -263,7 +263,7 @@ class Pet(models.Model):
         upload_to='images/', blank=True, null=True, default='')
 
     def __str__(self):
-        return f'{self.name} - ({self.owner.firstname})'
+        return f'{self.name} - ({self.owner.email})'
 
     class Meta:
         unique_together = ('name', 'owner',)
@@ -415,6 +415,6 @@ class Purpose(models.IntegerChoices):
 
 
 class Appointment(models.Model):
-    pet = models.ForeignKey(Pet, on_delete=models.CASCADE, null=False)
+    pet = models.ForeignKey(Pet, on_delete=models.CASCADE, blank=False)
     date = models.DateTimeField(default=timezone.now, blank=False)
     purpose = models.IntegerField(default=Purpose.CHECK_UP)

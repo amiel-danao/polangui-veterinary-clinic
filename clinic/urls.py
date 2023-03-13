@@ -21,6 +21,7 @@ from rest_framework import routers
 from django.views.generic.base import RedirectView
 from django.conf.urls.static import static
 from django.conf import settings
+from django.contrib.auth.views import LogoutView
 
 
 router = routers.DefaultRouter(trailing_slash=False)
@@ -32,10 +33,21 @@ router.register(r'upload_pet_image', views.UploadPetImageViewSet)
 router.register(r'upload_customer_image', views.UploadCustomerImageViewSet)
 
 urlpatterns = [
-    path('', RedirectView.as_view(url=reverse_lazy('admin:index'))),
+    path('', views.index, name='index'),
     path('admin/', admin.site.urls),
     path('api/', include((router.urls, 'app_name'), namespace='instance_name')),
     path('chat/', views.chat_all, name='chat'),
+    path('appointment/', views.AppointmentListView.as_view(), name='appointment'),
+    path('accounts/login/',
+        views.MyLoginView.as_view(),
+        name='login',
+    ),
+    path(
+        'accounts/logout/',
+        LogoutView.as_view(),
+        name='logout',
+    ),
+    path("accounts/register", views.register_request, name="register"),
     path('video_call/<str:message_gc_id>/',
          views.video_call, name='video-call'),
     path('chat/<str:message_gc_id>/', views.chat),

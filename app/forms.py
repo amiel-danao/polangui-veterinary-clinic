@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
 from django import forms
-from app.models import CustomUser, Customer, Device, Pet
+from app.models import Appointment, CustomUser, Customer, Device, Pet, Purpose
 
 
 class DeviceForm(forms.ModelForm):
@@ -66,3 +66,30 @@ class UserChangeForm(forms.ModelForm):
     class Meta:
         model = CustomUser
         fields = ('email', 'password', 'firstname', 'middlename', 'lastname', 'picture', 'is_active', 'is_superuser')
+
+
+class NewUserForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ("email", "password1", "password2")
+
+    def save(self, commit=True):
+        user = super(NewUserForm, self).save(commit=False)
+        user.email = self.cleaned_data['email']
+        if commit:
+            user.save()
+        return user
+    
+class AppointmentForm(forms.ModelForm):
+    purpose = forms.ChoiceField(choices=Purpose.choices)
+    
+    class Meta:
+        model = Appointment
+        fields = ('pet', 'date', 'purpose')
+    
+    def __init__(self, owner=None, **kwargs):
+        super(AppointmentForm, self).__init__(**kwargs)
+        if owner:
+            self.fields['pet'].queryset = Pet.objects.filter(owner__email=owner.email)

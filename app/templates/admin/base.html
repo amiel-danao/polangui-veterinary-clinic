@@ -40,7 +40,7 @@
     {% block header %}
     <div id="header">
         <div id="branding">
-          <h3 class="title">{% if theme.title %}{% trans theme.title %}{% else %}{{ site_title|default:_('clinic administration') }}{% endif %}</h3>  
+          <h3 class="title"><a href="{% url 'index' %}">{% if theme.title %}{% trans theme.title %}{% else %}{{ site_title|default:_('clinic administration') }}{% endif %}</a></h3>  
           
           {% block branding %}
         

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load render_table from django_tables2 %}
+{% load django_bootstrap5  %}
+{% load crispy_forms_tags %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/chat.css' %}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2.0.0-beta.3/css/lightgallery-bundle.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_orange.css">
+
+    <style>
+        thead{
+            background-color: white;
+        }
+        .table-container{
+            background-color: white;
+        }
+    </style>
+    
+{% endblock %}
+
+
+{% block content %}
+    <h1 class="text-white">Polangui Veterinary Clinic - Appointment</h1>
+    <div class="container-fluid">
+        <div class="row mb-3">
+            <div class="col-3">
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal">New Appointment</button>
+            </div>
+        </div>
+        <div class="row">
+            {% render_table table %}
+            <!-- <table>
+                
+            </table> -->
+        </div>
+        
+        
+    </div>
+
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exampleModalLabel">Create Appointment</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form class="form" method="post">
+                {% csrf_token %}
+            <div class="modal-body">
+                <div class="mb-2">
+                    {{ form.pet|as_crispy_field }}
+                </div>
+                <div class="mb-2">
+                    <label for="date" class="form-label">Appointment Date</label>
+                    <input id="date" name="date" class="datepicker form-control mx-auto">
+                </div>
+                <div class="mb-2">
+                    {{ form.purpose|as_crispy_field }}
+                </div>
+            </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-success">Submit</button>
+                </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    <p id="dateToday" hidden>{{ today }}</p>
+    <p id="minTime" hidden>{{ min_time }}</p>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        $(document).ready(function(){
+            let today = $('#dateToday').text();
+            let minTime = $('#minTime').text();
+
+            const config = {
+                inline: true,
+                enableTime: true,
+                enableSeconds: false,
+                time_24hr: false,
+                altInput: true,
+                altFormat: "F j, Y, h:i K",
+                dateFormat: "Y-m-d, h:i K",
+                defaultDate: today,
+                minTime: minTime,
+                maxTime: "21:00",
+                minuteIncrement: 30,
+                minDate: today
+            };
+
+            $(".datepicker").flatpickr(config);
+        });        
+    </script>
+
+{% endblock %}

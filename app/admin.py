@@ -27,8 +27,9 @@ class CustomerAdmin(admin.ModelAdmin):
 
 @admin.register(Pet)
 class PetAdmin(admin.ModelAdmin):
-    list_display = [field.name for field in Pet._meta.get_fields() if not field.name in [
-        'id', 'medicalhistory', 'immunizationhistory', 'image', 'allergies', 'existing_conditions', 'device']]
+    list_display = ('id', 'name', 'owner', 'breed', 'species')
+    # list_display = [field.name for field in Pet._meta.get_fields() if not field.name in [
+    #     'id', 'medicalhistory', 'immunizationhistory', 'image', 'allergies', 'existing_conditions', 'device']]
     search_fields = ('owner__firstname', 'owner__middlename', 'owner__lastname', 'name')
     list_filter = ('species', 'breed', 'gender')
     # def has_add_permission(self, request, obj=None):
@@ -51,11 +52,11 @@ class MedicalHistoryAdmin(admin.ModelAdmin):
         vaccine_field.name for vaccine_field in MedicalHistory._meta.get_fields()]
 
 
-@admin.register(Device)
-class DeviceAdmin(admin.ModelAdmin):
-    # form = DeviceForm
-    list_display = [
-        device_field.name for device_field in Device._meta.get_fields()]
+# @admin.register(Device)
+# class DeviceAdmin(admin.ModelAdmin):
+#     # form = DeviceForm
+#     list_display = [
+#         device_field.name for device_field in Device._meta.get_fields()]
 
 @admin.register(ImmunizationHistory)
 class ImmunizationHistoryAdmin(admin.ModelAdmin):
@@ -117,7 +118,7 @@ for model in models:
     except admin.sites.AlreadyRegistered:
         pass
 
-admin.site.unregister(( DeviceToken, Category, Brand, Product, ProductCategory, ProductMeta, Order, OrderItem, Item, Transaction ))
+admin.site.unregister(( Device, DeviceToken, Category, Brand, Product, ProductCategory, ProductMeta, Order, OrderItem, Item, Transaction ))
 
 
 admin.site.site_header = "Polangui Veterinary Clinic"

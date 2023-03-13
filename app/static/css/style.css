@@ -1,0 +1,9 @@
+body{
+    background-image: url("https://img.freepik.com/free-photo/health-still-life-with-copy-space_23-2148854034.jpg?w=740&t=st=1678352071~exp=1678352671~hmac=64b7b65677cf862fcff99dcccca746b9a57872037c92cc159c36c5ca263d4d33") !important;
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+}
+
+.bg-warning{
+    background-color: #e6731e !important;
+}

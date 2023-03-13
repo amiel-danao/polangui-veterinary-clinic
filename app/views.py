@@ -1,7 +1,15 @@
-from gc import collect
+from django.utils.timezone import get_current_timezone
+from datetime import datetime
+from django.utils.timezone import make_aware
+from app.context_processors import SCHEDULE_DATEFORMAT
+from django_tables2 import SingleTableView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from app.context_processors import CONTEXT
-from app.models import DeviceToken, Breed, CustomUser, Customer, Device, ImmunizationHistory, MedicalHistory, Pet
+from app.forms import AppointmentForm, NewUserForm
+from app.models import Appointment, DeviceToken, Breed, CustomUser, Customer, Device, ImmunizationHistory, MedicalHistory, Pet
+from app.tables import AppointmentTable
 from .serializers import BreedSerializer, CustomUserSerializer, CustomerImageSerializer, CustomerSerializer, DeviceSerializer, DeviceTokenSerializer, ImmunizationHistorySerializer, MedicalHistorySerializer, PetImageSerializer, PetSerializer
 from rest_framework import viewsets, mixins, generics
 from rest_framework.decorators import api_view, action
@@ -16,9 +24,9 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 from django.http import HttpResponse
 from django.template import loader
-from rest_framework.response import Response
-from django.urls import resolve
-import threading
+from django.urls import resolve, reverse
+from django.contrib import messages
+from django.contrib.auth.views import LoginView
 import math
 import time
 import os
@@ -236,6 +244,39 @@ def chat_all(request):
     return HttpResponse(template.render(context, request))
 
 
+class AppointmentListView(LoginRequiredMixin, SingleTableView):
+    model = Appointment
+    table_class = AppointmentTable
+    template_name = 'pages/appointment.html'
+    per_page = 8
+
+    def post(self, request, *args, **kwargs):
+        
+        pet = Pet.objects.filter(id=request.POST.get('pet')).first()
+        # owner = Customer.objects.filter(email=request.user.email).first()
+        date = make_aware(datetime.strptime(
+                    request.POST.get('date'), SCHEDULE_DATEFORMAT), timezone=get_current_timezone())
+        Appointment.objects.create(pet=pet, date=date, purpose=request.POST.get('purpose'))
+        return self.get(request, *args, **kwargs)
+
+    # def post(self, request, *args, **kwargs):
+    #     self.object_list = self.get_queryset()
+    #     context = self.get_context_data()
+    #     owner = Customer.objects.filter(email=request.email).first()
+    #     Appointment.objects.create(pet=request.POST.get('pet'), owner=owner, purpose=request.POST.get('purpose'))
+    #     return self.render_to_response(context)
+
+    def get_table_data(self):
+
+        return Appointment.objects.filter(pet__owner__email=self.request.user.email)
+    
+    def get_context_data(self, **kwargs):
+        context = super(AppointmentListView, self).get_context_data(**kwargs)
+        
+        context['form'] = AppointmentForm(owner=self.request.user)
+            
+        return context
+
 def chat(request, message_gc_id):
     if request.user is None or request.user.is_authenticated is False:
         return redirect('admin:index')
@@ -336,3 +377,39 @@ def video_call(request, message_gc_id):
     }
 
     return HttpResponse(template.render(context, request))
+
+
+class MyLoginView(LoginView):
+    # form_class=LoginForm
+    redirect_authenticated_user=True
+    template_name='registration/login.html'
+
+    def get_success_url(self):
+        # write your logic here
+        # if self.request.user.is_superuser:
+        return reverse('index')# '/progress/'
+        # return '/'
+
+
+def register_request(request):
+    context = {}
+    if request.method == "POST":
+        form = NewUserForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            Customer.objects.create(email=user.email)
+            login(request, user)
+            return redirect("index")
+        context['form_errors'] = form.errors
+        messages.error(
+            request, "Unsuccessful registration. Invalid information.")
+    form = NewUserForm()
+    context["register_form"] = form
+    return render(request=request, template_name="registration/register.html", context=context)
+
+
+def index(request):
+    if request.user is None or request.user.is_authenticated is False:
+        return redirect('/accounts/login')
+    context = {}
+    return render(request, 'pages/chat.html', context)
