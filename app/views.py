@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.utils.timezone import get_current_timezone
 from datetime import datetime
 from django.utils.timezone import make_aware
@@ -220,7 +221,7 @@ def chat_all(request):
         return redirect('admin:index')
 
     template = loader.get_template('pages/chat.html')
-    all_custmomers = Customer.objects.all()
+    all_custmomers = Customer.objects.filter(~Q(email=request.user.email))
     receiver = None
     message_gc_id = None
     try:
@@ -282,7 +283,7 @@ def chat(request, message_gc_id):
         return redirect('admin:index')
 
     template = loader.get_template('pages/chat.html')
-    all_customers = Customer.objects.all()
+    all_customers = Customer.objects.filter(~Q(email=request.user.email))
     receiver = None
     receiver_id = ''
 
