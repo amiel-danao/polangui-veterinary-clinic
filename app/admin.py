@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.apps import apps
 from app.forms import DeviceForm, UserChangeForm, UserCreationForm
 from django import forms
-from app.models import (Category, Breed, CustomUser, Customer, Device, DeviceToken, ImmunizationHistory, MedicalHistory, Pet, Vaccine, Product, ProductCategory, ProductMeta,
+from app.models import (Appointment, Category, Breed, CustomUser, Customer, Device, DeviceToken, ImmunizationHistory, MedicalHistory, Pet, Vaccine, Product, ProductCategory, ProductMeta,
  Order, OrderItem, Item, Transaction, Brand)
 from django.contrib.auth.models import Group, User
 from admin_interface.admin import Theme
@@ -50,6 +50,21 @@ class VaccineAdmin(admin.ModelAdmin):
 class MedicalHistoryAdmin(admin.ModelAdmin):
     list_display = [
         vaccine_field.name for vaccine_field in MedicalHistory._meta.get_fields()]
+    
+@admin.register(Appointment)
+class AppointmentAdmin(admin.ModelAdmin):
+    list_display = [
+        appointment.name for appointment in Appointment._meta.get_fields()]
+    
+# @admin.register(Item)
+# class ItemAdmin(admin.ModelAdmin):
+#     list_display = [
+#         item.name for item in Item._meta.get_fields()]
+    
+# @admin.register(Product)
+# class ProductAdmin(admin.ModelAdmin):
+#     list_display = [
+#         product.name for product in Product._meta.get_fields()]
 
 
 # @admin.register(Device)
@@ -118,7 +133,7 @@ for model in models:
     except admin.sites.AlreadyRegistered:
         pass
 
-admin.site.unregister(( Device, DeviceToken, Category, Brand, Product, ProductCategory, ProductMeta, Order, OrderItem, Item, Transaction ))
+admin.site.unregister(( Device, DeviceToken, Category, ProductMeta, Order, OrderItem, Transaction ))
 
 
 admin.site.site_header = "Polangui Veterinary Clinic"

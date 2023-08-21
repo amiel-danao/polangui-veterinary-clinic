@@ -38,6 +38,7 @@ urlpatterns = [
     path('api/', include((router.urls, 'app_name'), namespace='instance_name')),
     path('chat/', views.chat_all, name='chat'),
     path('appointment/', views.AppointmentListView.as_view(), name='appointment'),
+    path('pets/', views.user_pets, name='pets'),
     path('accounts/login/',
         views.MyLoginView.as_view(),
         name='login',

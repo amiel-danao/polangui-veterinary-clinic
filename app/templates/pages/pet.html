@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load render_table from django_tables2 %}
+{% load django_bootstrap5  %}
+{% load crispy_forms_tags %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/chat.css' %}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2.0.0-beta.3/css/lightgallery-bundle.css" />
+
+    <style>
+        thead{
+            background-color: white;
+        }
+        .table-container{
+            background-color: white;
+        }
+        .circular-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .carousel-caption{
+            top: 50%;
+            transform: translateY(-50%);
+            bottom: initial;
+            text-align: left;
+        }
+        .scrollable-container {
+            max-height: 600px; /* Adjust the height as needed */
+            overflow-y: auto;
+        }
+    </style>
+    
+{% endblock %}
+
+
+{% block content %}
+    <h1 class="text-white">Polangui Veterinary Clinic - My Pets</h1>
+    <div class="container-fluid">
+        <div class="row">
+            {% if pet_list %}
+            <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    {% for pet in pet_list %}
+                        <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active"{% endif %}></button>
+                    {% endfor %}
+                </div>
+                <div class="carousel-inner">
+                    {% for pet in pet_list %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <img src="{% static 'images/white-paper-texture.jpg' %}" class="d-block w-100" alt="Placeholder">
+                            <div class="carousel-caption text-black">                                
+                                <table class="table">
+                                    <tr>
+                                        <td>
+                                            <div class="scrollable-container">
+                                                {% if pet.image %}
+                                                    <img src="{{ pet.image }}" class="circular-image" alt="{{ pet.name }}">
+                                                {% else %}
+                                                    
+                                                {% endif %}
+                                                <h5>{{ pet.name }}</h5>
+                                                <p><b>Date of Birth:</b> {{ pet.date_of_birth|date:'M d Y' }}</p>
+                                                <p>Gender: {{ pet.gender }}</p>
+                                                <p>Weight: {{ pet.weight }} kg</p>
+                                                <p>Height: {{ pet.height }} cm</p>
+                                                <p>Species: {{ pet.species }}</p>
+                                                <p>Breed: {{ pet.breed_id }}</p>
+                                                <p>Allergies: {{ pet.allergies }}</p>
+                                                <p>Existing Conditions: {{ pet.existing_conditions }}</p>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <h6>Medical Histories:</h6>
+                                            <div class="scrollable-container">
+                                                <div class="accordion" id="accordionExample">
+                                                    {% for history in pet.medical_histories %}
+                                                        <div class="accordion-item">
+                                                            <h2 class="accordion-header">
+                                                              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ forloop.counter0 }}" aria-expanded="true" aria-controls="collapseOne">
+                                                                Date: {{ history.date|date:'M d Y' }}
+                                                              </button>
+                                                            </h2>
+                                                            <div id="collapse-{{ forloop.counter0 }}" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                                                              <div class="accordion-body">
+                                                                <b>Description:</b> {{ history.description }}<br>
+                                                                <b>Veterinarian:</b> {{ history.veterinarian }}<br>
+                                                                <b>Diagnosis:</b> {{ history.diagnosis }}<br>
+                                                              </div>
+                                                            </div>
+                                                          </div>
+                                                    {% endfor %}                                                    
+                                                  </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev text-black" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next text-black" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        {% else %}
+            <h1>You don't have pets yet.</h1>
+        {% endif %}
+
+
+
+        </div>
+    </div>
+
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+   
+
+{% endblock %}

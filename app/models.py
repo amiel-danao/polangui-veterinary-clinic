@@ -32,11 +32,7 @@ def id_gen() -> str:
 class Brand(models.Model):
     title = models.CharField(max_length=75)
     summary = models.TextField(blank=True, null=True)
-    # Field name made lowercase.
-    createdat = models.DateTimeField(db_column='createdAt')
-    # Field name made lowercase.
-    updatedat = models.DateTimeField(
-        db_column='updatedAt', blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     content = models.TextField(blank=True, null=True)
 
 
@@ -62,29 +58,25 @@ class Item(models.Model):
     # Field name made lowercase.
     brandid = models.ForeignKey(Brand, models.DO_NOTHING, db_column='brandId')
     # Field name made lowercase.
-    supplierid = models.ForeignKey(
-        'Customer', models.DO_NOTHING, db_column='supplierId')
+    # supplierid = models.ForeignKey('Customer', models.DO_NOTHING, db_column='supplierId')
     # Field name made lowercase.
-    orderid = models.ForeignKey(
-        'Order', models.DO_NOTHING, db_column='orderId')
-    sku = models.CharField(max_length=100)
-    mrp = models.FloatField()
+    # orderid = models.ForeignKey('Order', models.DO_NOTHING, db_column='orderId')
+    # sku = models.CharField(max_length=100)
+    # mrp = models.FloatField()
     discount = models.FloatField()
     price = models.FloatField()
-    quantity = models.SmallIntegerField()
+    quantity = models.PositiveSmallIntegerField()
     sold = models.SmallIntegerField()
-    available = models.SmallIntegerField()
-    defective = models.SmallIntegerField()
+    available = models.BooleanField()
+    defective = models.BooleanField()
     # Field name made lowercase.
-    createdby = models.BigIntegerField(db_column='createdBy')
+    # createdby = models.BigIntegerField(db_column='createdBy')
     # Field name made lowercase.
-    updatedby = models.BigIntegerField(
-        db_column='updatedBy', blank=True, null=True)
+    # updatedby = models.BigIntegerField(db_column='updatedBy', blank=True, null=True)
     # Field name made lowercase.
-    createdat = models.DateTimeField(db_column='createdAt')
+    # createdat = models.DateTimeField(auto_now_add=True)
     # Field name made lowercase.
-    updatedat = models.DateTimeField(
-        db_column='updatedAt', blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
 
 class Order(models.Model):
@@ -135,12 +127,8 @@ class OrderItem(models.Model):
 class Product(models.Model):
     title = models.CharField(max_length=75, blank=False)
     summary = models.TextField(blank=True, null=True)
-    type = models.SmallIntegerField()
-    # Field name made lowercase.
-    createdat = models.DateTimeField(db_column='createdAt')
-    # Field name made lowercase.
-    updatedat = models.DateTimeField(
-        db_column='updatedAt', blank=True, null=True)
+    type = models.CharField(max_length=75, blank=False)
+    updated_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     content = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -413,8 +401,16 @@ class Purpose(models.IntegerChoices):
     CHECK_UP = 1, "Check Up"
     GROOMING = 2, "Grooming"
 
+class Payment(models.IntegerChoices):
+    FULLY_PAID = 1, "Fully Paid"
+    BALANCE = 2, "Balance"
+    PROMISORY_NOTE = 3, "Prmisory Note"
 
 class Appointment(models.Model):
     pet = models.ForeignKey(Pet, on_delete=models.CASCADE, blank=False)
     date = models.DateTimeField(default=timezone.now, blank=False)
-    purpose = models.IntegerField(default=Purpose.CHECK_UP)
+    purpose = models.PositiveSmallIntegerField(choices=Payment.choices, default=Purpose.CHECK_UP)
+    payment_method = models.PositiveSmallIntegerField(choices=Payment.choices, default=Payment.BALANCE)
+
+    def __str__(self):
+        return f'{self.id}-{self.pet}-{self.date}'
