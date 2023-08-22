@@ -39,6 +39,7 @@ urlpatterns = [
     path('chat/', views.chat_all, name='chat'),
     path('appointment/', views.AppointmentListView.as_view(), name='appointment'),
     path('pets/', views.user_pets, name='pets'),
+    path('pets_admin/', views.pet_list, name='pets_admin'),
     path('accounts/login/',
         views.MyLoginView.as_view(),
         name='login',

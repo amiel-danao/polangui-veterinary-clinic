@@ -463,3 +463,50 @@ def user_pets(request):
     }
     
     return render(request, 'pages/pet.html', context)
+
+@login_required
+def pet_list(request):
+    user = request.user
+    if (user.is_superuser != 1):
+        return HttpResponse('Unauthorized', status=401)
+
+    owned_pets = Pet.objects.all()
+    
+    pet_list = []
+    for pet in owned_pets:
+        pet_info = {
+            'name': pet.name,
+            'date_of_birth': pet.date_of_birth,
+            'gender': pet.gender,
+            'weight': pet.weight,
+            'height': pet.height,
+            'species': pet.species,
+            'allergies': pet.allergies,
+            'existing_conditions': pet.existing_conditions,
+            'image': pet.image.url if pet.image else None,
+            'breed_id': pet.breed_id,
+        }
+        pet_list.append(pet_info)
+
+        medical_histories = MedicalHistory.objects.filter(pet=pet)
+        medical_history_list = []
+        for history in medical_histories:
+            history_info = {
+                'date': history.date,
+                'description': history.description,
+                'veterinarian': history.veterinarian,
+                'diagnosis': history.diagnosis,
+                'tests_performed': history.tests_performed,
+                'test_results': history.test_results,
+                'action': history.action,
+                'medication': history.medication,
+            }
+            medical_history_list.append(history_info)
+        
+        pet_info['medical_histories'] = medical_history_list
+    
+    context = {
+        'pet_list': pet_list,
+    }
+    
+    return render(request, 'pages/pet_admin.html', context)

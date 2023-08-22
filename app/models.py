@@ -13,7 +13,6 @@ from django.utils.http import int_to_base36
 from smart_selects.db_fields import GroupedForeignKey, ChainedForeignKey
 from dirtyfields import DirtyFieldsMixin
 from django.core.management import call_command
-# from notifications.management.commands import save_notification
 
 
 ID_LENGTH = 30
@@ -219,6 +218,7 @@ class Customer(models.Model):
             return "/static/logo/app_icon.png"
 
 
+
 class Pet(models.Model):
     id = models.CharField(max_length=ID_LENGTH,
                           primary_key=True, default=id_gen, editable=False)
@@ -263,6 +263,23 @@ class Pet(models.Model):
         else:
             return "/static/logo/app_icon.png"
 
+class MedicalHistory(models.Model):
+    pet = models.ForeignKey(Pet, on_delete=models.CASCADE)
+    date = models.DateTimeField(default=timezone.now)
+    description = models.CharField(max_length=200, blank=True)
+    veterinarian = models.CharField(max_length=50, blank=False, null=False)
+    diagnosis = models.CharField(max_length=200, blank=False)
+    tests_performed = models.CharField(max_length=200, blank=True, null=True)
+    test_results = models.CharField(max_length=200, blank=False)
+    action = models.CharField(max_length=200, blank=True, null=True)
+    medication = models.CharField(max_length=200, blank=True, null=True)
+
+    class Meta:
+        verbose_name_plural = 'Medical Histories'
+        unique_together = ('pet', 'date', 'veterinarian')
+
+    def __str__(self):
+        return self.pet.name + ' - ' + str(self.date)
 
 class Device(models.Model):
     device_id = models.CharField(max_length=DEVICE_ID_LENGTH, primary_key=True)
@@ -282,25 +299,6 @@ class Device(models.Model):
             return self.pet.image.url
         else:
             return "/static/logo/app_icon.png"
-
-
-class MedicalHistory(models.Model):
-    pet = models.ForeignKey(Pet, on_delete=models.CASCADE)
-    date = models.DateTimeField(default=timezone.now)
-    description = models.CharField(max_length=200, blank=True)
-    veterinarian = models.CharField(max_length=50, blank=False, null=False)
-    diagnosis = models.CharField(max_length=200, blank=False)
-    tests_performed = models.CharField(max_length=200, blank=True, null=True)
-    test_results = models.CharField(max_length=200, blank=False)
-    action = models.CharField(max_length=200, blank=True, null=True)
-    medication = models.CharField(max_length=200, blank=True, null=True)
-
-    class Meta:
-        verbose_name_plural = 'Medical Histories'
-        unique_together = ('pet', 'date', 'veterinarian')
-
-    def __str__(self):
-        return self.pet.name + ' - ' + str(self.date)
 
 
 class Vaccine(models.Model):

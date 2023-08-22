@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load render_table from django_tables2 %}
+{% load django_bootstrap5  %}
+{% load crispy_forms_tags %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/chat.css' %}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2.0.0-beta.3/css/lightgallery-bundle.css" />
+
+    <style>
+        thead{
+            background-color: white;
+        }
+        .table-container{
+            background-color: white;
+        }
+        .circular-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .carousel-caption{
+            top: 50%;
+            transform: translateY(-50%);
+            bottom: initial;
+            text-align: left;
+        }
+        .scrollable-container {
+            max-height: 600px; /* Adjust the height as needed */
+            overflow-y: auto;
+        }
+    </style>
+    
+{% endblock %}
+
+
+{% block content %}
+    <h1 class="text-white">Polangui Veterinary Clinic - My Pets</h1>
+    <div class="container-fluid">
+        <div class="row">
+            <form>
+                <div class="input-group mb-3">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search pets..." aria-describedby="button-addon2">
+                    <button class="btn btn-secondary" type="submit" id="button-addon2">Search</button>
+                </div>
+            </form>
+        </div>
+        <div class="row" id="petCards">
+            {% for pet in pet_list %}
+                {% if forloop.counter|divisibleby:4 and not forloop.last %}
+                    <div class="row">
+                {% endif %}
+                <div class="col-md-3 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                {% if pet.image %}
+                                    <img src="{{ pet.image }}" class="card-img-top" alt="{{ pet.name }}">
+                                {% else %}
+                                    
+                                {% endif %}
+                            </div>
+                            <button type="button" class="btn btn-primary w-100 my-2" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-pet="{{pet}}">Edit</button>
+                            {{pet|json_script:"mydata"}}
+                            <h5 class="card-title">{{ pet.name }}</h5>
+                            <p>Date of Birth:{{ pet.date_of_birth|date:'M d Y' }}</p>
+                            <p>Gender: {{ pet.gender }}</p>
+                            <p>Weight: {{ pet.weight }} kg</p>
+                            <p>Height: {{ pet.height }} cm</p>
+                            <p>Species: {{ pet.species }}</p>
+                            <p>Breed: {{ pet.breed_id }}</p>
+                            <p>Allergies: {{ pet.allergies }}</p>
+                            <p>Existing Conditions: {{ pet.existing_conditions }}</p>
+                            <h6>Medical Histories:</h6>
+                            <div class="scrollable-container">
+                                <div class="accordion" id="accordionExample">
+                                    {% for history in pet.medical_histories %}
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ forloop.counter0 }}" aria-expanded="true" aria-controls="collapseOne">
+                                                Date: {{ history.date|date:'M d Y' }}
+                                                </button>
+                                            </h2>
+                                            <div id="collapse-{{ forloop.counter0 }}" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                                                <div class="accordion-body">
+                                                <b>Description:</b> {{ history.description }}<br>
+                                                <b>Veterinarian:</b> {{ history.veterinarian }}<br>
+                                                <b>Diagnosis:</b> {{ history.diagnosis }}<br>
+                                                </div>
+                                            </div>
+                                            </div>
+                                    {% endfor %}                                                    
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if forloop.counter|divisibleby:4 and not forloop.last %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+            
+
+
+
+
+        </div>
+    </div>
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exampleModalLabel">New message</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form>
+                <div class="mb-3">
+                  <label for="recipient-name" class="col-form-label">Recipient:</label>
+                  <input type="text" class="form-control" id="recipient-name">
+                </div>
+                <div class="mb-3">
+                  <label for="message-text" class="col-form-label">Message:</label>
+                  <textarea class="form-control" id="message-text"></textarea>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary">Send message</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        const exampleModal = document.getElementById('exampleModal')
+        if (exampleModal) {
+        exampleModal.addEventListener('show.bs.modal', event => {
+            // Button that triggered the modal
+            const button = event.relatedTarget
+            // Extract info from data-bs-* attributes
+            let petData = String(button.getAttribute('data-bs-pet'))
+            petData = petData.replace(/'/g, '"');
+            console.log(petData);
+            const obj = JSON.parse(document.getElementById('mydata').textContent);//JSON.parse(petData);
+            console.log(obj);
+            // If necessary, you could initiate an Ajax request here
+            // and then do the updating in a callback.
+        
+            // Update the modal's content.
+            const modalTitle = exampleModal.querySelector('.modal-title')
+            const modalBodyInput = exampleModal.querySelector('.modal-body input')
+        
+            modalTitle.textContent = `Edit ${obj.name}`
+            modalBodyInput.value = obj.name
+        })
+        }
+    </script>
+
+{% endblock %}
