@@ -8,7 +8,7 @@
 {% block css %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/chat.css' %}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2.0.0-beta.3/css/lightgallery-bundle.css" />
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         thead{
             background-color: white;
@@ -55,6 +55,12 @@
                 {% endif %}
                 <div class="col-md-3 mb-4">
                     <div class="card">
+                        <div class="card-header">
+                            <div class="input-group my-3 ">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-pet="{{pet.id}}"><i class="bi bi-pencil-square"></i></button>
+                                <button class="btn btn-outline-secondary" type="button"><i class="bi bi-clock-history"></i> Medical History</button>                                
+                            </div>
+                        </div>
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
                                 {% if pet.image %}
@@ -63,8 +69,10 @@
                                     
                                 {% endif %}
                             </div>
-                            <button type="button" class="btn btn-primary w-100 my-2" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-pet="{{pet}}">Edit</button>
-                            {{pet|json_script:"mydata"}}
+                            {% with "mydata-"|add:pet.id as id %}
+                            {{pet|json_script:id}}
+                            {% endwith %}
+                            
                             <h5 class="card-title">{{ pet.name }}</h5>
                             <p>Date of Birth:{{ pet.date_of_birth|date:'M d Y' }}</p>
                             <p>Gender: {{ pet.gender }}</p>
@@ -109,55 +117,165 @@
 
         </div>
     </div>
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="exampleModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h1 class="modal-title fs-5" id="exampleModalLabel">New message</h1>
+              <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Pet Info</h1>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
               <form>
-                <div class="mb-3">
-                  <label for="recipient-name" class="col-form-label">Recipient:</label>
-                  <input type="text" class="form-control" id="recipient-name">
+                <div class="mb-1">
+                  <label for="pet-name" class="col-form-label">Name:</label>
+                  <input type="text" class="form-control" id="pet-name" name="name">
                 </div>
-                <div class="mb-3">
-                  <label for="message-text" class="col-form-label">Message:</label>
-                  <textarea class="form-control" id="message-text"></textarea>
-                </div>
+                <div class="mb-1">
+                    <label for="pet-birthday" class="col-form-label">Birthday:</label>
+                    <input type="text" class="form-control" id="pet-birthday" name="date_of_birth">
+                  </div>
+                  <div class="mb-1">
+                    <label for="pet-gender" class="col-form-label">Gender:</label>
+                    <select class="form-select" id="pet-gender" name="gender">
+                        <option value="1" selected>Male</option>
+                        <option value="2">Female</option>
+                      </select>
+                  </div>
+                  <div class="mb-1">
+                    <label for="pet-weight" class="col-form-label">Weight:</label>
+                    <input type="number" class="form-control" id="pet-weight" name="weight">
+                  </div>
+                  <div class="mb-1">
+                    <label for="pet-height" class="col-form-label">Height:</label>
+                    <input type="number" class="form-control" id="pet-height" name="height">
+                  </div>
+                  <div class="mb-1">
+                    <label for="pet-species" class="col-form-label">Species:</label>
+                    <select class="form-select" id="pet-species" name="species">
+                        {% for species in species_data %}
+                            <option value="{{ species.0 }}">{{ species.0 }}</option>
+                        {% endfor %}
+                      </select>
+                  </div>
+                  <div class="mb-1">
+                    
+                    <label for="pet-breed" class="col-form-label">Breed:</label>
+                    <select class="form-select" id="pet-breed" name="breed">
+                        
+                      </select>
+                  </div>
+                  <div class="mb-1">
+                    <label for="pet-allergies" class="col-form-label">Allergies:</label>
+                    <textarea rows="3" type="text" class="form-control" id="pet-allergies" name="allergies"></textarea>
+                  </div>
+                  <div class="mb-1">
+                    <label for="pet-existing_conditions" class="col-form-label">Existing Conditions:</label>
+                    <textarea rows="3" type="text" class="form-control" id="pet-existing_conditions" name="existing_conditions"></textarea>
+                  </div>
               </form>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary">Send message</button>
+              <button type="button" class="btn btn-primary">Save</button>
             </div>
           </div>
         </div>
       </div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        let cat_breeds = [
+            {% for breed in cat_breeds %}
+                "{{breed}}",
+            {% endfor %}
+        ];
+        let dog_breeds = [
+            {% for breed in dog_breeds %}
+                "{{breed}}",
+            {% endfor %}
+        ];
+
+        $("#pet-species").on('change', function(e){
+            let selectedSpecies = e.target.value;
+            console.log('species updated!');
+            updateBreedDropdown(selectedSpecies);
+        });
+
+        updateBreedDropdown('Cat');
+
+        function updateBreedDropdown(selectedSpecies){
+            let breedSelections = ``;
+            let sourceBreed = cat_breeds;
+            $("#pet-breed").empty();
+
+            if(selectedSpecies === 'Dog'){
+                sourceBreed = dog_breeds;
+            }
+
+            sourceBreed.forEach(element => {
+                breedSelections += `<option value="${element}">${element}</option>`;
+            });
+
+            $("#pet-breed").append(breedSelections);
+        }
+
+        console.log(cat_breeds);
+        console.log(dog_breeds);
+    </script>
+    
     <script>
         const exampleModal = document.getElementById('exampleModal')
+        const petBirthdayInput = exampleModal.querySelector('[name="date_of_birth"]')
+        const birthdayPicker = $(petBirthdayInput).flatpickr();
+        
         if (exampleModal) {
         exampleModal.addEventListener('show.bs.modal', event => {
             // Button that triggered the modal
             const button = event.relatedTarget
             // Extract info from data-bs-* attributes
-            let petData = String(button.getAttribute('data-bs-pet'))
-            petData = petData.replace(/'/g, '"');
-            console.log(petData);
-            const obj = JSON.parse(document.getElementById('mydata').textContent);//JSON.parse(petData);
+            let petId = button.getAttribute('data-bs-pet');//String(button.getAttribute('data-bs-pet'))
+            // petData = petData.replace(/'/g, '"');
+            console.log(petId);
+            const obj = JSON.parse(document.getElementById(`mydata-${petId}`).textContent);//JSON.parse(petData);
             console.log(obj);
             // If necessary, you could initiate an Ajax request here
             // and then do the updating in a callback.
         
             // Update the modal's content.
             const modalTitle = exampleModal.querySelector('.modal-title')
-            const modalBodyInput = exampleModal.querySelector('.modal-body input')
+            const petNameInput = exampleModal.querySelector('[name="name"]')
+            let petGenderInput = $("#pet-gender");
+            const petWeightInput = exampleModal.querySelector('[name="weight"]')
+            const petHeightInput = exampleModal.querySelector('[name="height"]')
+            let petSpeciesInput = $("#pet-species");
+            let petBreedInput = $("#pet-breed");
+            const petAllergiesInput = exampleModal.querySelector('[name="allergies"]')
+            const petExistingConditionsInput = exampleModal.querySelector('[name="existing_conditions"]')
         
-            modalTitle.textContent = `Edit ${obj.name}`
-            modalBodyInput.value = obj.name
+            modalTitle.textContent = `Edit ${obj.name} Information`
+            petNameInput.value = obj.name
+            birthdayPicker.setDate(obj.date_of_birth);
+            let selectedGenderValue = 1;
+            if(obj.gender != "Male"){
+                selectedGenderValue = 2;
+            }
+
+            $('#pet-gender option')
+            .removeAttr('selected')
+            .filter(`[value=${selectedGenderValue}]`)
+                .attr('selected', true)
+
+            petWeightInput.value = obj.weight
+            petHeightInput.value = obj.height
+
+            petSpeciesInput.val(obj.species).change();
+            updateBreedDropdown(obj.species);
+
+            petBreedInput.val(obj.breed).change();
+
+            petAllergiesInput.value = obj.allergies;
+            petExistingConditionsInput.value = obj.existing_conditions
         })
         }
     </script>

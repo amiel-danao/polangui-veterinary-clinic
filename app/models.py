@@ -217,7 +217,10 @@ class Customer(models.Model):
         else:
             return "/static/logo/app_icon.png"
 
-
+SPECIES_CHOICES = (
+    ('Cat', 'Cat'),
+    ('Dog', 'Dog'),
+)
 
 class Pet(models.Model):
     id = models.CharField(max_length=ID_LENGTH,
@@ -233,10 +236,7 @@ class Pet(models.Model):
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     weight = models.FloatField(validators=[MinValueValidator(0)], default=0)
     height = models.FloatField(validators=[MinValueValidator(0)], default=0)
-    SPECIES_CHOICES = (
-        ('Cat', 'Cat'),
-        ('Dog', 'Dog'),
-    )
+    
     species = models.CharField(
         max_length=10, default='Cat', choices=SPECIES_CHOICES)
     breed = models.ForeignKey(

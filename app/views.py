@@ -9,7 +9,7 @@ from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from app.context_processors import CONTEXT
 from app.forms import AppointmentForm, NewUserForm
-from app.models import Appointment, DeviceToken, Breed, CustomUser, Customer, Device, ImmunizationHistory, MedicalHistory, Pet
+from app.models import SPECIES_CHOICES, Appointment, DeviceToken, Breed, CustomUser, Customer, Device, ImmunizationHistory, MedicalHistory, Pet
 from app.tables import AppointmentTable
 from .serializers import BreedSerializer, CustomUserSerializer, CustomerImageSerializer, CustomerSerializer, DeviceSerializer, DeviceTokenSerializer, ImmunizationHistorySerializer, MedicalHistorySerializer, PetImageSerializer, PetSerializer
 from rest_framework import viewsets, mixins, generics
@@ -475,6 +475,7 @@ def pet_list(request):
     pet_list = []
     for pet in owned_pets:
         pet_info = {
+            'id': pet.id,
             'name': pet.name,
             'date_of_birth': pet.date_of_birth,
             'gender': pet.gender,
@@ -505,8 +506,15 @@ def pet_list(request):
         
         pet_info['medical_histories'] = medical_history_list
     
+    species_data = SPECIES_CHOICES
+    cat_breeds = Breed.objects.filter(species='Cat')
+    dog_breeds = Breed.objects.filter(species='Dog')
+
     context = {
         'pet_list': pet_list,
+        'species_data': species_data,
+        'cat_breeds': cat_breeds,
+        'dog_breeds': dog_breeds
     }
     
     return render(request, 'pages/pet_admin.html', context)
