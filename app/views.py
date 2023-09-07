@@ -8,7 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from app.context_processors import CONTEXT
-from app.forms import AppointmentForm, NewUserForm
+from app.forms import AppointmentForm, MedicalHistoryForm, NewUserForm, PetForm
 from app.models import SPECIES_CHOICES, Appointment, DeviceToken, Breed, CustomUser, Customer, Device, ImmunizationHistory, MedicalHistory, Pet
 from app.tables import AppointmentTable
 from .serializers import BreedSerializer, CustomUserSerializer, CustomerImageSerializer, CustomerSerializer, DeviceSerializer, DeviceTokenSerializer, ImmunizationHistorySerializer, MedicalHistorySerializer, PetImageSerializer, PetSerializer
@@ -24,15 +24,18 @@ from rest_framework import status
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
-from django.urls import resolve, reverse
+from django.urls import resolve, reverse, reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.views import LoginView
 import math
 import time
 import os
 from agora_token_builder import RtcTokenBuilder
+from django.http import JsonResponse
+from django.views.generic import ListView, CreateView, UpdateView
+from rest_framework.generics import UpdateAPIView
 
 
 dirname = os.path.dirname(__file__)
@@ -146,28 +149,7 @@ class UploadCustomerImageViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMi
     parser_classes = [MultiPartParser]
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def pet_detail(request, pk):
-    try:
-        pet = Pet.objects.get(pk=pk)
-    except Pet.DoesNotExist:
-        return JsonResponse({'message': 'The pet does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
-    if request.method == 'GET':
-        pet_serializer = PetSerializer(pet)
-        return JsonResponse(pet_serializer.data)
-
-    elif request.method == 'PUT':
-        pet_data = JSONParser().parse(request)
-        pet_serializer = PetSerializer(pet, data=pet_data)
-        if pet_serializer.is_valid():
-            pet_serializer.save()
-            return JsonResponse(pet_serializer.data, status=status.HTTP_200_OK)
-        return JsonResponse(pet_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == 'DELETE':
-        pet.delete()
-        return JsonResponse({'message': 'Pet was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['GET', ])
@@ -196,7 +178,7 @@ def get_immunization_by_pet(request):
         return JsonResponse(immunization_history_serializer.data, safe=False)
 
 
-@api_view(['PUT', 'DELETE'])
+@api_view(['PUT'])
 def medical_detail(request, pk):
     try:
         medical_history = MedicalHistory.objects.get(pk=pk)
@@ -212,9 +194,9 @@ def medical_detail(request, pk):
             return JsonResponse(medical_history_serializer.data, status=status.HTTP_200_OK)
         return JsonResponse(medical_history_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    elif request.method == 'DELETE':
-        medical_history.delete()
-        return JsonResponse({'message': 'MedicalHistory was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+    # elif request.method == 'DELETE':
+    #     medical_history.delete()
+    #     return JsonResponse({'message': 'MedicalHistory was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
 
 
 def chat_all(request):
@@ -424,6 +406,10 @@ def user_pets(request):
         return render(request, 'pages/pet.html', {})
 
     owned_pets = Pet.objects.filter(owner_id=customer.id)
+    search_query = request.GET.get('q', '')
+
+    if search_query:
+        owned_pets = owned_pets.filter(name__icontains=search_query)
     
     pet_list = []
     for pet in owned_pets:
@@ -445,6 +431,7 @@ def user_pets(request):
         medical_history_list = []
         for history in medical_histories:
             history_info = {
+                'id': history.id,
                 'date': history.date,
                 'description': history.description,
                 'veterinarian': history.veterinarian,
@@ -460,6 +447,7 @@ def user_pets(request):
     
     context = {
         'pet_list': pet_list,
+        'q': search_query
     }
     
     return render(request, 'pages/pet.html', context)
@@ -470,7 +458,11 @@ def pet_list(request):
     if (user.is_superuser != 1):
         return HttpResponse('Unauthorized', status=401)
 
+    search_query = request.GET.get('q', '')
     owned_pets = Pet.objects.all()
+
+    if search_query:
+        owned_pets = owned_pets.filter(name__icontains=search_query)
     
     pet_list = []
     for pet in owned_pets:
@@ -486,6 +478,8 @@ def pet_list(request):
             'existing_conditions': pet.existing_conditions,
             'image': pet.image.url if pet.image else None,
             'breed_id': pet.breed_id,
+            'url': reverse('update_pet', kwargs={'pk': str(pet.id)}),#reverse('api:pet-detail', kwargs={'pk': str(pet.id)})
+            # 'medical_url': reverse('add_medical_history', kwargs={'pk': str(pet.id)})
         }
         pet_list.append(pet_info)
 
@@ -493,6 +487,7 @@ def pet_list(request):
         medical_history_list = []
         for history in medical_histories:
             history_info = {
+                'id': history.id,
                 'date': history.date,
                 'description': history.description,
                 'veterinarian': history.veterinarian,
@@ -500,7 +495,7 @@ def pet_list(request):
                 'tests_performed': history.tests_performed,
                 'test_results': history.test_results,
                 'action': history.action,
-                'medication': history.medication,
+                'medication': history.medication,                
             }
             medical_history_list.append(history_info)
         
@@ -509,12 +504,101 @@ def pet_list(request):
     species_data = SPECIES_CHOICES
     cat_breeds = Breed.objects.filter(species='Cat')
     dog_breeds = Breed.objects.filter(species='Dog')
+    medical_form = MedicalHistoryForm()
 
     context = {
         'pet_list': pet_list,
         'species_data': species_data,
         'cat_breeds': cat_breeds,
-        'dog_breeds': dog_breeds
+        'dog_breeds': dog_breeds,
+        'medical_form': medical_form,
+        'q': search_query
     }
     
     return render(request, 'pages/pet_admin.html', context)
+
+class UpdatePetView(UpdateView):
+    model = Pet
+    form_class = PetForm
+    # template_name = 'post_form.html'
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        # Assuming your Post model has an 'id' field, include it in the response
+        data = {
+            'id': self.object.id,
+            'title': self.object.title,
+            'content': self.object.content,
+        }
+        return JsonResponse(data)
+    
+class PetUpdateView(UpdateAPIView):
+    queryset = Pet.objects.all()
+    serializer_class = PetSerializer
+    lookup_field = 'pk'  # Specify the lookup field (in this case, primary key)
+
+@api_view(['POST'])
+def add_medical_history(request):
+    
+    
+    if request.method == 'POST':
+        form = MedicalHistoryForm(request.data)
+        
+
+        if form.is_valid():
+            # try:
+            #     pet = Pet.objects.get(pk=pk)
+            # except Pet.DoesNotExist:
+            #     return JsonResponse({'message': 'The pet does not exist'}, status=status.HTTP_404_NOT_FOUND)
+            # Create a new MedicalHistory instance and associate it with the pet
+            medical_history = form.save(commit=False)
+            medical_history.save()
+            
+            return HttpResponseRedirect(reverse('pets_admin'))
+        else:
+            return JsonResponse(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    return JsonResponse({'message': 'Invalid request method'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        
+@api_view(['DELETE'])
+@login_required
+def delete_medical_history(request, pk):
+    try:
+        medical = MedicalHistory.objects.get(pk=pk)
+    except MedicalHistory.DoesNotExist:
+        return JsonResponse({'message': 'The medical does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    
+    medical.delete()
+    return JsonResponse({'message': 'Medical History was deleted successfully'}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', 'PUT', 'DELETE', 'PATCH'])
+@login_required
+def pet_detail(request, pk):
+    try:
+        pet = Pet.objects.get(pk=pk)
+    except Pet.DoesNotExist:
+        return JsonResponse({'message': 'The pet does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        pet_serializer = PetSerializer(pet)
+        return JsonResponse(pet_serializer.data)
+
+    elif request.method == 'PUT':
+        pet_data = request.data#JSONParser().parse(request.data)
+        pet_serializer = PetSerializer(pet, data=pet_data)
+        if pet_serializer.is_valid():
+            pet_serializer.save()
+            return JsonResponse(pet_serializer.data, status=status.HTTP_200_OK)
+        return JsonResponse(pet_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'PATCH':
+        pet_data = request.data#JSONParser().parse(request.data)
+        pet_serializer = PetSerializer(pet, data=pet_data)
+        if pet_serializer.is_valid():
+            pet_serializer.save()
+            return JsonResponse(pet_serializer.data, status=status.HTTP_200_OK)
+        return JsonResponse(pet_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        pet.delete()
+        return JsonResponse({'message': 'Pet was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)

@@ -20,7 +20,7 @@ class DeviceSerializer(serializers.ModelSerializer):
 class PetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pet
-        fields = ('id', 'owner', 'date_of_birth', 'name', 'gender', 'weight',
+        fields = ('id', 'date_of_birth', 'name', 'gender', 'weight',
                   'height', 'species', 'breed', 'allergies', 'existing_conditions')
 
     def to_representation(self, instance):

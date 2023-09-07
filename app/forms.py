@@ -5,7 +5,8 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
 from django import forms
-from app.models import Appointment, CustomUser, Customer, Device, Pet, Purpose
+from crispy_forms.helper import FormHelper
+from app.models import Appointment, CustomUser, Customer, Device, MedicalHistory, Pet, Purpose
 
 
 class DeviceForm(forms.ModelForm):
@@ -93,3 +94,32 @@ class AppointmentForm(forms.ModelForm):
         super(AppointmentForm, self).__init__(**kwargs)
         if owner:
             self.fields['pet'].queryset = Pet.objects.filter(owner__email=owner.email)
+
+class PetForm(forms.ModelForm):
+    class Meta:
+        model = Pet
+        fields = '__all__'  # You can specify the fields you want to include here if needed
+
+class MedicalHistoryForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(MedicalHistoryForm, self).__init__(*args, **kwargs)
+        # self.fields['pet'].hidden = True
+        field = self.fields['pet']
+        field.widget = field.hidden_widget()
+        self.helper = FormHelper(self)
+        self.helper.form_tag = False
+
+    class Meta:
+        model = MedicalHistory
+        fields = ['pet', 'date', 'description', 'veterinarian', 'diagnosis', 'tests_performed', 'test_results', 'action', 'medication']
+        
+        widgets = {
+            'date': forms.TextInput(attrs={'class': 'datepicker'}),
+            'description': forms.Textarea(attrs={'cols': 80, 'rows': 2}),
+            'diagnosis': forms.Textarea(attrs={'cols': 80, 'rows': 2}),
+            'tests_performed': forms.Textarea(attrs={'cols': 80, 'rows': 2}),
+            'test_results': forms.Textarea(attrs={'cols': 80, 'rows': 2}),
+            'action': forms.Textarea(attrs={'cols': 80, 'rows': 2}),
+            'medication': forms.Textarea(attrs={'cols': 80, 'rows': 2}),
+        }
