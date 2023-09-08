@@ -133,7 +133,7 @@ for model in models:
     except admin.sites.AlreadyRegistered:
         pass
 
-admin.site.unregister((ProductCategory, Brand, Breed, MedicalHistory, Vaccine, Product, ImmunizationHistory, CustomUser, Theme, Device, DeviceToken, Group, Category, ProductMeta, Order, OrderItem, Transaction ))
+admin.site.unregister((ProductCategory, Brand, MedicalHistory, Vaccine, Product, ImmunizationHistory, CustomUser, Theme, Device, DeviceToken, Group, Category, ProductMeta, Order, OrderItem, Transaction ))
 
 
 admin.site.site_header = "Polangui Veterinary Clinic"
