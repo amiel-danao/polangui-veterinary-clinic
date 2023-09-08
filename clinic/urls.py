@@ -29,7 +29,7 @@ router.register(r'customer', views.CustomerViewSet)
 router.register(r'device_token', views.DeviceTokenViewSet)
 # router.register(r'pet', views.PetViewSet)
 # router.register(r'device', views.DeviceViewSet)
-router.register(r'upload_pet_image', views.UploadPetImageViewSet)
+router.register(r'upload_pet_image', views.UploadPetImageViewSet, basename="upload_pet_image")
 router.register(r'upload_customer_image', views.UploadCustomerImageViewSet)
 # router.register(r'update_pet/<str:pk>/', views.PetUpdateView.as_view(), name='update_pet'),
 

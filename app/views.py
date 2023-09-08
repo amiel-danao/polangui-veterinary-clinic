@@ -471,6 +471,7 @@ def pet_list(request):
             'name': pet.name,
             'date_of_birth': pet.date_of_birth,
             'gender': pet.gender,
+            'image': pet.image,
             'weight': pet.weight,
             'height': pet.height,
             'species': pet.species,
@@ -479,6 +480,7 @@ def pet_list(request):
             'image': pet.image.url if pet.image else None,
             'breed_id': pet.breed_id,
             'url': reverse('update_pet', kwargs={'pk': str(pet.id)}),#reverse('api:pet-detail', kwargs={'pk': str(pet.id)})
+            'upload_pet_image': reverse('api:upload_pet_image-detail', kwargs={'pk': str(pet.id)})
             # 'medical_url': reverse('add_medical_history', kwargs={'pk': str(pet.id)})
         }
         pet_list.append(pet_info)

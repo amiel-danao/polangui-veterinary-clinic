@@ -52,10 +52,12 @@ class Category(models.Model):
 
 class Item(models.Model):
     # Field name made lowercase.
-    productid = models.ForeignKey(
-        'Product', models.DO_NOTHING, db_column='productId')
+    # productid = models.ForeignKey(
+    #     'Product', models.DO_NOTHING, db_column='productId')
     # Field name made lowercase.
-    brandid = models.ForeignKey(Brand, models.DO_NOTHING, db_column='brandId')
+    # brandid = models.ForeignKey(Brand, models.DO_NOTHING, db_column='brandId')
+    brand_name = models.CharField(max_length=100, blank=False, null=True)
+    product_name = models.CharField(max_length=100, blank=False, null=True)
     # Field name made lowercase.
     # supplierid = models.ForeignKey('Customer', models.DO_NOTHING, db_column='supplierId')
     # Field name made lowercase.
@@ -76,6 +78,10 @@ class Item(models.Model):
     # createdat = models.DateTimeField(auto_now_add=True)
     # Field name made lowercase.
     updated_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Inventory"
+        verbose_name_plural = "Inventories"
 
 
 class Order(models.Model):

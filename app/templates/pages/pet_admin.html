@@ -64,15 +64,16 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
                                 {% if pet.image %}
-                                    <img src="{{ pet.image }}" class="card-img-top" alt="{{ pet.name }}">
+                                    <img id="petImage-{{pet.id}}" src="{{ pet.image }}" class="card-img-top" alt="{{ pet.name }}">
                                 {% else %}
                                     
                                 {% endif %}
+                                
                             </div>
                             {% with "mydata-"|add:pet.id as id %}
                             {{pet|json_script:id}}
                             {% endwith %}
-                            
+                            <input class="form-control petImage" type="file" name="image" data-url="{{pet.upload_pet_image}}" data-id="{{pet.id}}">
                             <h5 class="card-title">{{ pet.name }}</h5>
                             <p>Date of Birth:{{ pet.date_of_birth|date:'M d Y' }}</p>
                             <p>Gender: {{ pet.gender }}</p>
@@ -430,6 +431,54 @@
             }
             return cookieValue;
         }
+    </script>
+
+    <script>
+        $('.petImage').on('change', function() {
+            // Get the selected file
+            const selectedFile = this.files[0];
+
+            // Check if a file is selected
+            if (selectedFile) {
+                // Check if the selected file is an image
+                if (selectedFile.type.startsWith('image/')) {
+                    // Display file information or perform actions
+                    const imageId = $(this).attr('data-id')
+                    const image = $(`#petImage-${imageId}`).get(0)
+                    // const data = {
+                    //     image: selectedFile
+                    // }
+                    const data = new FormData();  // Create a FormData object to send binary data
+                    data.append('image', selectedFile);
+                    const url = $(this).attr('data-url')
+                    
+
+                    $.ajax({
+                        type:"PUT",
+                        data:data,
+                        url:url,
+                        contentType: false,  // Set content type to false to let jQuery handle it
+                        processData: false,
+                        success: function(response) {
+                            image.src = response.image;
+                        },
+                        error: function(xhr, textStatus, errorThrown) {
+                            console.error("Error:", errorThrown);
+                            // Handle the error, display an error message, etc.
+                        }
+                    })
+                } else {
+                    // Display an error message for non-image files
+                    alert('Please select an image file.');
+                    // Clear the file input
+                    $(this).val('');
+                }
+            } else {
+                // Handle the case where no file is selected
+                // const preview = $(this).siblings('.preview');
+                // preview.html('<p>No file selected.</p>');
+            }
+        });
     </script>
 
 {% endblock %}
