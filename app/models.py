@@ -413,7 +413,7 @@ class Payment(models.IntegerChoices):
 class Appointment(models.Model):
     pet = models.ForeignKey(Pet, on_delete=models.CASCADE, blank=False)
     date = models.DateTimeField(default=timezone.now, blank=False)
-    purpose = models.PositiveSmallIntegerField(choices=Payment.choices, default=Purpose.CHECK_UP)
+    purpose = models.PositiveSmallIntegerField(choices=Purpose.choices, default=Purpose.CHECK_UP)
     payment_method = models.PositiveSmallIntegerField(choices=Payment.choices, default=Payment.BALANCE)
 
     def __str__(self):
