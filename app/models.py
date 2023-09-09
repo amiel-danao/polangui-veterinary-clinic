@@ -403,7 +403,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 class Purpose(models.IntegerChoices):
     CHECK_UP = 1, "Check Up"
-    GROOMING = 2, "Grooming"
+    IMMUNIZATION = 2, "Immunization"
+    VACCINATION = 3, "Vaccination"
+    DEWORMING = 4, "Deworming"
+    HOME_SERVICE = 5, "Home Service"
+    GROOMING = 6, "Grooming"
 
 class Payment(models.IntegerChoices):
     FULLY_PAID = 1, "Fully Paid"
