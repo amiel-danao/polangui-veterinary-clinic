@@ -56,6 +56,8 @@ class Item(models.Model):
     #     'Product', models.DO_NOTHING, db_column='productId')
     # Field name made lowercase.
     # brandid = models.ForeignKey(Brand, models.DO_NOTHING, db_column='brandId')
+    picture = models.ImageField(
+        upload_to='items/', blank=True, null=True, default='')
     brand_name = models.CharField(max_length=100, blank=False, null=True)
     product_name = models.CharField(max_length=100, blank=False, null=True)
     # Field name made lowercase.
@@ -78,7 +80,6 @@ class Item(models.Model):
     # createdat = models.DateTimeField(auto_now_add=True)
     # Field name made lowercase.
     updated_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
-
     class Meta:
         verbose_name = "Inventory"
         verbose_name_plural = "Inventories"
@@ -412,13 +413,21 @@ class Purpose(models.IntegerChoices):
 class Payment(models.IntegerChoices):
     FULLY_PAID = 1, "Fully Paid"
     BALANCE = 2, "Balance"
-    PROMISORY_NOTE = 3, "Prmisory Note"
+    PROMISORY_NOTE = 3, "Promisory Note"
+
+class AppointmentActions(models.IntegerChoices):
+    # PENDING = 0, "Pending"
+    ACCEPT = 1, "Accept"
+    DELETE = 2, "Delete"
+    DECLINE = 3, "Decline"
 
 class Appointment(models.Model):
     pet = models.ForeignKey(Pet, on_delete=models.CASCADE, blank=False)
     date = models.DateTimeField(default=timezone.now, blank=False)
     purpose = models.PositiveSmallIntegerField(choices=Purpose.choices, default=Purpose.CHECK_UP)
     payment_method = models.PositiveSmallIntegerField(choices=Payment.choices, default=Payment.BALANCE)
+    action_taken = models.PositiveSmallIntegerField(choices=AppointmentActions.choices, default=AppointmentActions.ACCEPT)
+    action_message = models.CharField(max_length=256, blank=True, default='')
 
     def __str__(self):
         return f'{self.id}-{self.pet}-{self.date}'

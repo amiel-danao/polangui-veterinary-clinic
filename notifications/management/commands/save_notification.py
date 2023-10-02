@@ -22,7 +22,7 @@ class Command(BaseCommand):
             obj = ImmunizationHistory.objects.get(pk=pk)
         
             dirname = os.path.dirname(__file__)
-            filename = "clinic-firebase-adminsdk-4g25g-b8cd5d3052.json"
+            filename = "polangui-veterinary-clinic-firebase-adminsdk-f45f4-8e49caf115.json"
             filepath = os.path.join(
                 dirname, f'../{filename}')
 

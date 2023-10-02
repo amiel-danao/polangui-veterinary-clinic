@@ -11,7 +11,7 @@
 {% block content %}
     <h1 class="text-white">Polangui Veterinary Clinic - Chat</h1>
     <div id="frame">
-        <div id="sidepanel">
+        <!-- <div id="sidepanel">
             <div id="profile">
                 <div class="wrap">
                     <img id="profile-img" src="{{ request.user.get_photo_url }}" class="online" alt="" />
@@ -31,7 +31,11 @@
                 <ul class="ul-no-style">
                     {% for contact in contacts %}
                         <li class="contact">
+                            {% if request.user.is_staff %}
+                            <a href="/chat/{{ contact.id }}-{{request.user.id}}" class="chat-entry">
+                            {% else %}
                             <a href="/chat/{{request.user.id}}-{{ contact.id }}" class="chat-entry">
+                            {% endif %}
                                 <div class="wrap">
                                     <span class="contact-status online"></span>
                                     <img src="{{ contact.get_photo_url  }}" alt="" />
@@ -47,30 +51,13 @@
                     
                 </ul>
             </div>
-        </div>
+        </div> -->
         <div class="content">
             <div class="contact-profile">
                 {% if receiver %}
-                    <img src="{{ receiver.get_photo_url }}" alt="No other user to chat with..." />
+                    <img src="{{ receiver.get_photo_url }}" alt="{{receiver.email}}" />
                     <p>{{ receiver }}</p>
                     
-                    <div class="dropdown float-end">
-                        <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                          Pets
-                        </button>
-                        <ul class="dropdown-menu">
-                            {% if pets %}
-                                {% for pet in pets %}
-                                <li><a class="dropdown-item" href="{% url 'admin:app_pet_change' pet.id %}" type="button" target="_blank">{{ pet.name }}
-                                        <img src="{{ pet.get_photo_url }}" alt="No other user to chat with..." />
-                                    </a>
-                                </li>
-                                {% endfor %}
-                            {% else %}
-                                <li><button class="dropdown-item">This customer doesn't have any pet yet.</button></li>
-                            {% endif %}
-                        </ul>
-                      </div>
                       {% if message_gc_id %}
                       <!-- <div class="float-end">
                             <a href="{% url 'video-call' message_gc_id=message_gc_id %}" onclick="openwindow.call(this); return false;" target="_blank" class="btn btn-primary" type="button">
@@ -79,7 +66,7 @@
                         </div> -->
                         {% endif %}
                 {% else %}
-                    <p>No other user to chat with...</p>
+                    <p>{{receiver.email}}</p>
                 {% endif %}
                 <div class="social-media">
                     <i class="fa fa-facebook" aria-hidden="true"></i>
@@ -140,13 +127,13 @@
 
         
         const firebaseConfig = {
-            apiKey: "AIzaSyAO8A0v2vsb_p5xxcV7GZAN-0-vktiM57Y",
-            authDomain: "clinic.firebaseapp.com",
-            databaseURL: "https://clinic-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "clinic",
-            storageBucket: "clinic.appspot.com",
-            messagingSenderId: "914416835191",
-            appId: "1:914416835191:web:94e7c68474cc94e16a4472"
+            apiKey: "AIzaSyCmoTLdNPPEYuv1r1PDmb7JZPpgJVHakDA",
+            authDomain: "polangui-veterinary-clinic.firebaseapp.com",
+            projectId: "polangui-veterinary-clinic",
+            storageBucket: "polangui-veterinary-clinic.appspot.com",
+            messagingSenderId: "855006601998",
+            appId: "1:855006601998:web:5488bbb3f3aaa34a22ed5f",
+            measurementId: "G-RB6453083Y"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -183,6 +170,9 @@
                         let timestamp = data.timestamp;
                         let message_class = data.idFrom == $('#userId').val()? 'replies': 'sent';
                         let picture_url = data.idFrom == $('#userId').val()? $('#myPic').val(): $('#receiverPic').val();
+                        if(picture_url === null || picture_url.trim().length === 0){
+                            picture_url = "{% static 'logo/app_icon.png' %}";
+                        }
                         let message_content = data.content;
 
                         let existing_message_row = $(`li[data-timestamp='${timestamp}']`);

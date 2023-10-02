@@ -4,10 +4,11 @@ from django.contrib import admin
 from django.apps import apps
 from app.forms import UserChangeForm, UserCreationForm
 from django import forms
-from app.models import (Appointment, Brand, Category, Breed, CustomUser, Customer, Device, DeviceToken, ImmunizationHistory, MedicalHistory, Pet, Vaccine, Product, ProductCategory, ProductMeta,
+from app.models import (Appointment, Brand, Category, Breed, CustomUser, Customer, Device, DeviceToken, ImmunizationHistory, Item, MedicalHistory, Pet, Vaccine, Product, ProductCategory, ProductMeta,
  Order, OrderItem, Transaction)
 from django.contrib.auth.models import Group
 from admin_interface.admin import Theme
+from django.utils.html import format_html
 # admin.site.unregister((Theme, Group))
 
 # @admin.register(User)
@@ -55,6 +56,21 @@ class PetAdmin(admin.ModelAdmin):
 class AppointmentAdmin(admin.ModelAdmin):
     list_display = [
         appointment.name for appointment in Appointment._meta.get_fields()]
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        formfield = super(AppointmentAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        if db_field.name == 'action_message':
+            formfield.widget = forms.Textarea(attrs=formfield.widget.attrs)
+        return formfield
+    
+@admin.register(Item)
+class ItemAdmin(admin.ModelAdmin):
+    list_display = ('product_name', 'brand_name', 'thumb')
+    
+    def thumb(self, obj):
+        return format_html("<img src='{}'  width='48' height='48' />".format(obj.picture.url))
+
+    thumb.allow_tags = True
+    thumb.__name__ = 'Picture'
     
 # @admin.register(Item)
 # class ItemAdmin(admin.ModelAdmin):

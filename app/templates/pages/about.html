@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load render_table from django_tables2 %}
+{% load django_bootstrap5  %}
+{% load crispy_forms_tags %}
+
+{% block css %}
+    
+{% endblock %}
+
+
+{% block content %}
+    
+    <div class="container-fluid">
+        <div class="row mb-3">
+            <div class="col">
+                <div class="card">
+                    <img src="{% static 'logo/logo.png' %}" class="mx-auto card-img-top w-25" alt="...">
+                    <div class="card-body">
+                      <h5 class="card-title text-center">Veterinary Clinic: A Place of Healing and Hope</h5>
+                      <p class="card-text">The bond between humans and their pets has been present since ancient times, and it has grown stronger over time. As our lives become more busy, pets provide us with companionship and unconditional love, while we provide them with care and attention to live healthy and happy lives. Proper medical attention is essential for pet care, and many pet owners take their furry friends to the vet. Polangui Veterinary Clinics offer healing and hope for both owners and pets, providing the necessary care and treatment to keep them healthy and happy. They also provide peace of mind, knowing our furry family members are in good hands.
+                        The Polangui Veterinary Clinic is more than just a place to receive medical care. It is also a place of hope. Hope for a sick animal to get better, hope for an injured animal to heal, and hope for a better life for all animals.</p>                      
+                    </div>
+                  </div>
+            </div>
+        </div>
+        
+        
+    </div>
+
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+{% endblock %}

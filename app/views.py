@@ -39,7 +39,7 @@ from rest_framework.generics import UpdateAPIView
 
 
 dirname = os.path.dirname(__file__)
-filename = "clinic-firebase-adminsdk-f45f4-e1db7a11eb.json"
+filename = "polangui-veterinary-clinic-firebase-adminsdk-f45f4-8e49caf115.json"
 filepath = os.path.join(
     dirname, f'../{filename}')
 
@@ -208,22 +208,26 @@ def chat_all(request):
     receiver = None
     message_gc_id = None
     try:
-        receiver = Customer.objects.first()
-        message_gc_id = f'{request.user.id}-{receiver.id}'
+        if request.user.is_staff:
+            receiver = CustomUser.objects.filter(is_staff=False).first()
+            message_gc_id = f'{receiver.id}-{request.user.id}'
+        else:
+            receiver = CustomUser.objects.filter(is_staff=True).first()
+            message_gc_id = f'{request.user.id}-{receiver.id}'
     except Exception:
         pass
 
-    pets = get_my_pets(receiver)
+    # pets = get_my_pets(receiver)
 
     context = {
-        "pets": pets,
+        # "pets": pets,
         "receiver": receiver,
         "contacts": all_custmomers,
         "message_gc_id": message_gc_id
     }
 
     if request.method == 'POST':
-        send_message(request=request, receiver_id=receiver)
+        send_message(request=request, receiver_id=receiver.id)
 
     return HttpResponse(template.render(context, request))
 
@@ -266,20 +270,24 @@ def chat(request, message_gc_id):
         return redirect('admin:index')
 
     template = loader.get_template('pages/chat.html')
-    all_customers = Customer.objects.filter(~Q(email=request.user.email))
+    all_customers = CustomUser.objects.filter(~Q(email=request.user.email))
     receiver = None
     receiver_id = ''
 
     try:
-        receiver_id = message_gc_id.split('-')[1]
-        receiver = Customer.objects.filter(id=receiver_id).first()
+        if request.user.is_staff:
+            receiver_id = message_gc_id.split('-')[0]
+        else:
+            receiver_id = message_gc_id.split('-')[1]
+        
+        receiver = CustomUser.objects.filter(id=receiver_id).first()
     except Exception:
         pass
 
-    pets = get_my_pets(receiver)
+    # pets = get_my_pets(receiver)
 
     context = {
-        "pets": pets,
+        # "pets": pets,
         "receiver": receiver,
         "contacts": all_customers,
         "message_gc_id": message_gc_id
@@ -296,6 +304,8 @@ def send_message(request, receiver_id):
     if request is None or request.user is None or receiver_id is None:
         return
     message_gc_id = f'{request.user.id}-{receiver_id}'
+    if(request.user.is_staff):
+        message_gc_id = f'{receiver_id}-{request.user.id}'
     try:
         input_message = request.POST.get('input_message')
 
@@ -604,3 +614,6 @@ def pet_detail(request, pk):
     elif request.method == 'DELETE':
         pet.delete()
         return JsonResponse({'message': 'Pet was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+    
+def about(request):
+    return render(request, 'pages/about.html')

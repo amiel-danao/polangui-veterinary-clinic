@@ -11,18 +11,15 @@
         max-width:50%;
     }
 </style>
-
 <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
-        <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
-            <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                <span class="fs-5 d-none d-sm-inline">
-                    <img src="{% static 'logo/logo.png' %}" class="mx-auto d-block sidebar-icon" alt="clinic logo">
-                </span>
-            </a>
-            <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
-                
-
-                {% if user.is_authenticated %}
+    <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+        <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+            <span class="fs-5 d-none d-sm-inline">
+                <img src="{% static 'logo/logo.png' %}" class="mx-auto d-block sidebar-icon img-fluid" alt="clinic logo">
+            </span>
+        </a>
+        <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+            {% if user.is_authenticated %}
                     {% if user.is_superuser %}
                     <li class="nav-item">
                         <a href="{% url 'admin:index' %}" class="nav-link align-middle px-0">
@@ -59,18 +56,19 @@
                         </a>
                     </li>
                 {% endif %}
-                
                 <li>
-                    <a href="#" class="nav-link px-0 align-middle">
+                    <a href="{% url 'about' %}" class="nav-link px-0 align-middle">
                         <i class="bi bi-question-circle-fill"></i> <span class="ms-1 d-none d-sm-inline">About</span> </a>
                 </li>
-            </ul>
-            <hr>
+        </ul>
+        <hr>
             <ul class="navbar-nav ml-auto pb-3">
 
                 {% if user.is_authenticated %}
                     <li class="nav-item active mr-3 text-white">
+                        <span class="ms-1 d-none d-sm-inline">
                         Signed in as : <br>{{ user.email }}
+                    </span>
                     </li>
                     <li class="nav-item mr-3 text-white">
                         <i class="bi bi-box-arrow-left"></i>
@@ -81,5 +79,6 @@
                 {% endif %}
         
               </ul>
-        </div>
     </div>
+</div>
+

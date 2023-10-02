@@ -23,13 +23,20 @@
 
   <div class="container-fluid">
     <div class="row flex-nowrap">
-        {% include 'partials/_sidebar.html' %}
-        <main class="col ps-md-2 pt-2">
-          <div class="container-fluid min-vh-100 d-flex flex-column">
-          {% block content %} {% endblock %}  
-        </div>
-        {% include 'partials/_footer.html' %}
-        </main>
+      {% include 'partials/_sidebar.html' %}
+        <!-- <main class="col ps-md-2 pt-2"> -->
+          
+          <!-- <div class="container-fluid min-vh-100 d-flex flex-column"> -->
+          <div class="col py-3">
+            {% block content %} {% endblock %}  
+            <!-- </div> -->
+            
+          </div>
+        <!-- </main> -->
+        
+    </div>
+    <div class="row">
+      {% include 'partials/_footer.html' %}
     </div>
   </div>
 

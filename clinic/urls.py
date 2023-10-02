@@ -44,6 +44,7 @@ urlpatterns = [
     path('create_medical_history/', views.add_medical_history, name='add_medical_history'),
     path('delete_medical_history/<int:pk>/', views.delete_medical_history, name='delete_medical'),
     path('pets_admin/', views.pet_list, name='pets_admin'),
+    path('about/', views.about, name='about'),
     path('accounts/login/',
         views.MyLoginView.as_view(),
         name='login',
