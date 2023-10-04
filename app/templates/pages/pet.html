@@ -32,31 +32,45 @@
             max-height: 600px; /* Adjust the height as needed */
             overflow-y: auto;
         }
+        .carousel-inner{
+            overflow-y: auto;
+            background-image:url("/static/images/white-paper-texture.jpg");
+        }
+        .carousel-control-next-icon, .carousel-control-prev-icon{
+            color: black !important;
+        }
+        footer{
+            display: none;
+        }
     </style>
     
 {% endblock %}
 
 
 {% block content %}
-    <h1 class="text-white">Polangui Veterinary Clinic - My Pets</h1>
-    <div class="container-fluid">
-        <div class="row">
+    <div class="row">
+        <h1 class="text-white">Polangui Veterinary Clinic - My Pets</h1>
+    </div>
+    <!-- <div class="container-fluid h-100"> -->
+        <div class="row h-100">
             {% if pet_list %}
-            <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel">
+            <div id="carouselExampleCaptions" class="carousel slide col h-100" data-bs-ride="carousel">
+                
                 <div class="carousel-indicators">
                     {% for pet in pet_list %}
                         <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active"{% endif %}></button>
                     {% endfor %}
                 </div>
-                <div class="carousel-inner">
+                <div class="carousel-inner h-100">
+
                     {% for pet in pet_list %}
-                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                            <img src="{% static 'images/white-paper-texture.jpg' %}" class="d-block w-100" alt="Placeholder">
-                            <div class="carousel-caption text-black">                                
-                                <table class="table">
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}  h-100">
+                            <!-- <img src="{% static 'images/white-paper-texture.jpg' %}" class="d-block w-100 vh-100" alt="Placeholder"> -->
+                            <div class="carousel-caption text-black row h-100">                                
+                                <!-- <table class="table">
                                     <tr>
-                                        <td>
-                                            <div class="scrollable-container">
+                                        <td> -->
+                                            <div class="col-xs-12 col-lg-6">
                                                 {% if pet.image %}
                                                     <img src="{{ pet.image }}" class="circular-image" alt="{{ pet.name }}">
                                                 {% else %}
@@ -71,11 +85,12 @@
                                                 <p>Breed: {{ pet.breed_id }}</p>
                                                 <p>Allergies: {{ pet.allergies }}</p>
                                                 <p>Existing Conditions: {{ pet.existing_conditions }}</p>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <h6>Medical Histories:</h6>
-                                            <div class="scrollable-container">
+                                             </div>
+                                        <!--</td>
+                                        <td> -->
+                                            
+                                            <div class="col-xs-12 col-lg-6">
+                                                <h6>Medical Histories:</h6>
                                                 <div class="accordion" id="accordionExample">
                                                     {% for history in pet.medical_histories %}
                                                         <div class="accordion-item">
@@ -99,9 +114,9 @@
                                                     {% endfor %}                                                    
                                                   </div>
                                             </div>
-                                        </td>
+                                        <!-- </td>
                                     </tr>
-                                </table>
+                                </table> -->
                             </div>
                         </div>
                     {% endfor %}
@@ -122,7 +137,7 @@
 
 
         </div>
-    </div>
+    <!-- </div> -->
 
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
