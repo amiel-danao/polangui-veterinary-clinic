@@ -9,86 +9,84 @@
 {% endblock %}
 
 {% block content %}
-    <h1 class="text-white">Polangui Veterinary Clinic - Chat</h1>
-    <div id="frame">
-        <!-- <div id="sidepanel">
-            <div id="profile">
-                <div class="wrap">
-                    <img id="profile-img" src="{{ request.user.get_photo_url }}" class="online" alt="" />
-                    <p>{{ request.user.email }}</p>
-                    <i class="fa fa-chevron-down expand-button" aria-hidden="true"></i>
-                    <div id="status-options">
-                        <ul>
-                            <li id="status-online" class="active"><span class="status-circle"></span> <p>Online</p></li>
-                            <li id="status-away"><span class="status-circle"></span> <p>Away</p></li>
-                            <li id="status-busy"><span class="status-circle"></span> <p>Busy</p></li>
-                            <li id="status-offline"><span class="status-circle"></span> <p>Offline</p></li>
+    <div class="row">
+        <h1 class="text-white">Polangui Veterinary Clinic - Chat</h1>
+        
+    </div>
+    
+
+    <div id="frame" class="row h-100 bg-white">
+        {% if contact_view %}
+        
+        <!-- Sidebar -->
+        <div class="col-md-3 col-12 bg-secondary" id="sidebar" >
+            <h3 class="text-white p-3">Contacts</h3>
+            <div class="list-group">
+                {% for contact in contacts %}
+                    {% if request.user.is_staff %}
+                    <a href="/chat/{{ contact.id }}-{{request.user.id}}" class="p-2 chat-entry list-group-item list-group-item-action">
+                    {% else %}
+                    <a href="/chat/{{request.user.id}}-{{ contact.id }}" class="p-2 chat-entry list-group-item list-group-item-action">
+                    {% endif %}
+                
+                    <div class="d-flex w-25 justify-content-between">
+                        <img class="img-fluid w-50" src="{{ contact.get_photo_url  }}" alt="" />
+                    </div>
+                    <p class="mb-1">{{ contact }}</p>
+                  </a>
+			    {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% if not contact_view or not request.user.is_staff %}
+        <div class="col" id="chat-area">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col contact-profile">
+                            {% if contact_view %}
+                            <a class="btn btn-primary" type="button" href="/chat/">
+                                <i class="bi bi-person-lines-fill"></i>
+                                Contacts
+                            </a>
+                            {% endif %}
+                            {% if receiver %}
+                                <span class="badge bg-white rounded-pill">
+                                    <img src="{{ receiver.get_photo_url }}" class="img-fluid w-25" alt="{{receiver.email}}" />
+                                </span>
+                                
+                                <p>To: {{ receiver }}</p>
+                                
+                                {% if message_gc_id %}
+                                <!-- <div class="float-end">
+                                        <a href="{% url 'video-call' message_gc_id=message_gc_id %}" onclick="openwindow.call(this); return false;" target="_blank" class="btn btn-primary" type="button">
+                                            <i class="bi bi-camera-video-fill"></i>
+                                        </a>
+                                    </div> -->
+                                    {% endif %}
+                            {% else %}
+                                <p>{{receiver.email}}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="messages">
+                        <ul id="message_container" class="p-0">
+                            
                         </ul>
                     </div>
                 </div>
-            </div>
-            <div id="contacts">
-                <ul class="ul-no-style">
-                    {% for contact in contacts %}
-                        <li class="contact">
-                            {% if request.user.is_staff %}
-                            <a href="/chat/{{ contact.id }}-{{request.user.id}}" class="chat-entry">
-                            {% else %}
-                            <a href="/chat/{{request.user.id}}-{{ contact.id }}" class="chat-entry">
-                            {% endif %}
-                                <div class="wrap">
-                                    <span class="contact-status online"></span>
-                                    <img src="{{ contact.get_photo_url  }}" alt="" />
-                                    <div class="meta">
-                                        <p class="name">{{ contact }}</p></p>
-                                        <p class="preview">{{ contact.last_message }}</p>
-                                        
-                                    </div>
-                                </div>
-                            </a>
-                        </li>
-                    {% endfor %}
-                    
-                </ul>
-            </div>
-        </div> -->
-        <div class="content">
-            <div class="contact-profile">
-                {% if receiver %}
-                    <img src="{{ receiver.get_photo_url }}" alt="{{receiver.email}}" />
-                    <p>{{ receiver }}</p>
-                    
-                      {% if message_gc_id %}
-                      <!-- <div class="float-end">
-                            <a href="{% url 'video-call' message_gc_id=message_gc_id %}" onclick="openwindow.call(this); return false;" target="_blank" class="btn btn-primary" type="button">
-                                <i class="bi bi-camera-video-fill"></i>
-                            </a>
-                        </div> -->
-                        {% endif %}
-                {% else %}
-                    <p>{{receiver.email}}</p>
-                {% endif %}
-                <div class="social-media">
-                    <i class="fa fa-facebook" aria-hidden="true"></i>
-                    <i class="fa fa-twitter" aria-hidden="true"></i>
-                     <i class="fa fa-instagram" aria-hidden="true"></i>
+                <div class="card-footer">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="input-group mb-3 message-input">
+                            <input type="text" id="input_message" name="input_message" class="form-control" placeholder="Write your message..." aria-label="Write your message..." aria-describedby="submitMessage" autocomplete="off" required>
+                            
+                            <button class="btn btn-outline-secondary submit" type="submit" id="submitMessage"><i class="bi bi-send"></i></button>
+                        </div>
+                    </form>
                 </div>
-            </div>
-            <div class="messages row">
-                <ul id="message_container">
-                    
-                </ul>
-            </div>
-            
-            <div class="row">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="input-group mb-3 message-input">
-                        <input type="text" id="input_message" name="input_message" class="form-control" placeholder="Write your message..." aria-label="Write your message..." aria-describedby="submitMessage" autocomplete="off" required>
-                        
-                        <button class="btn btn-outline-secondary submit" type="submit" id="submitMessage"><i class="bi bi-send"></i></button>
-                    </div>
-                </form>
             </div>
 
             <input id="message_gc_id" type="text" value="{{message_gc_id}}" hidden>
@@ -100,9 +98,7 @@
                 <source src="{% static 'audios/new_message.mp3' %}" type="audio/mpeg">
             </audio>
         </div>
-
-        
-        
+        {% endif %}
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -246,4 +242,30 @@
             });
         });
     </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Get references to the sidebar and chat area elements
+            const sidebar = document.getElementById("sidebar");
+            const chatArea = document.getElementById("chat-area");
+        
+            // Get a reference to the toggle button
+            const toggleButton = document.getElementById("toggleSidebar");
+        
+            // Function to toggle the sidebar and chat area
+            function toggleSidebar() {
+                if (sidebar.style.display === "none" || sidebar.style.display === "") {
+                    sidebar.style.display = "block";
+                    chatArea.style.display = "none";
+                } else {
+                    sidebar.style.display = "none";
+                    chatArea.style.display = "block";
+                }
+            }
+        
+            // Add an event listener to the toggle button
+            toggleButton.addEventListener("click", toggleSidebar);
+        });
+        </script>
+    
 {% endblock %}

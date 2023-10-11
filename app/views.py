@@ -221,6 +221,7 @@ def chat_all(request):
 
     context = {
         # "pets": pets,
+        "contact_view": request.user.is_staff,
         "receiver": receiver,
         "contacts": all_custmomers,
         "message_gc_id": message_gc_id
@@ -277,10 +278,11 @@ def chat(request, message_gc_id):
     try:
         if request.user.is_staff:
             receiver_id = message_gc_id.split('-')[0]
+            receiver = Customer.objects.filter(id=receiver_id).first()
         else:
             receiver_id = message_gc_id.split('-')[1]
+            receiver = CustomUser.objects.filter(id=receiver_id).first()
         
-        receiver = CustomUser.objects.filter(id=receiver_id).first()
     except Exception:
         pass
 
