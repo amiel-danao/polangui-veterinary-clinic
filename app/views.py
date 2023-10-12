@@ -280,7 +280,8 @@ def chat(request, message_gc_id):
             receiver_id = message_gc_id.split('-')[0]
             customer = Customer.objects.filter(id=receiver_id).first()
             receiver = CustomUser.objects.filter(email=customer.email).first()
-            message_gc_id = f'{receiver.id}-{request.user.id}'
+            receiver_id = receiver.id
+            message_gc_id = f'{receiver_id}-{request.user.id}'            
         else:
             receiver_id = message_gc_id.split('-')[1]
             receiver = CustomUser.objects.filter(id=receiver_id).first()

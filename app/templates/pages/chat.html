@@ -115,6 +115,18 @@
                 wins[url].focus();
         }
     </script>
+    <script>
+        var currentURL = window.location.href;
+
+        // Split the URL by "/"
+        var segments = currentURL.split('/');
+
+        // Access the last segment
+        var lastSegment = segments[segments.length - 1];
+
+        // Split the last segment by "-"
+        var splitLastSegment = lastSegment.split('-');
+    </script>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.14.0/firebase-app.js'
     
@@ -225,6 +237,9 @@
 
             var messageInputValue = $('#submitMessage').val();
             $('#submitMessage').val('');
+
+            
+
             $.ajax({
                 type: 'POST',
                 url: window.location.href,
