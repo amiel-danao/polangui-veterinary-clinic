@@ -835,3 +835,8 @@ body {
 #chat-area .card{
     height: 90% !important;
 }
+
+.contact-list{
+    overflow-y: scroll;
+    max-height: 768px;
+}

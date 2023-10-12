@@ -19,9 +19,9 @@
         {% if contact_view %}
         
         <!-- Sidebar -->
-        <div class="col-md-3 col-12 bg-secondary" id="sidebar" >
+        <div class="col-md-4 col-12 bg-secondary" id="sidebar" >
             <h3 class="text-white p-3">Contacts</h3>
-            <div class="list-group">
+            <div class="list-group contact-list">
                 {% for contact in contacts %}
                     {% if request.user.is_staff %}
                     <a href="/chat/{{ contact.id }}-{{request.user.id}}" class="p-2 chat-entry list-group-item list-group-item-action">
@@ -44,14 +44,14 @@
                 <div class="card-header">
                     <div class="row">
                         <div class="col contact-profile">
-                            {% if contact_view %}
+                            {% if request.user.is_staff %}
                             <a class="btn btn-primary" type="button" href="/chat/">
                                 <i class="bi bi-person-lines-fill"></i>
                                 Contacts
                             </a>
                             {% endif %}
                             {% if receiver %}
-                                <span class="badge bg-white rounded-pill">
+                                <span class="badge bg-white rounded-pill w-25">
                                     <img src="{{ receiver.get_photo_url }}" class="img-fluid w-25" alt="{{receiver.email}}" />
                                 </span>
                                 
