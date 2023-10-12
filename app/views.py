@@ -208,7 +208,7 @@ def chat_all(request):
     receiver = None
     message_gc_id = None
     try:
-        if request.user.is_staff:
+        if request.user.is_staff:            
             receiver = CustomUser.objects.filter(is_staff=False).first()
             message_gc_id = f'{receiver.id}-{request.user.id}'
         else:
@@ -278,7 +278,9 @@ def chat(request, message_gc_id):
     try:
         if request.user.is_staff:
             receiver_id = message_gc_id.split('-')[0]
-            receiver = Customer.objects.filter(id=receiver_id).first()
+            customer = Customer.objects.filter(id=receiver_id).first()
+            receiver = CustomUser.objects.filter(email=customer.email).first()
+            message_gc_id = f'{receiver.id}-{request.user.id}'
         else:
             receiver_id = message_gc_id.split('-')[1]
             receiver = CustomUser.objects.filter(id=receiver_id).first()

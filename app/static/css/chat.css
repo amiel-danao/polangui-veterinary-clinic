@@ -658,7 +658,7 @@ body {
     width: 100%;
     height: auto;
     min-height: calc(100% - 93px);
-    max-height: 95%;
+    max-height: 600px;
     /* max-height: calc(100% - 93px); */
     overflow-y: scroll;
     overflow-x: hidden;
@@ -667,7 +667,8 @@ body {
 @media screen and (max-width: 735px) {
     .content .messages {
         /* max-height: calc(100% - 105px); */
-        max-height: 95%;
+        max-height: 600px;
+        overflow-y: scroll;
     }
 }
 
